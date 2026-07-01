@@ -1,0 +1,6 @@
+allowBuilds:
+  '@sentry/cli': true
+  sharp: true
+  unrs-resolver: true
+  playwright: true
+  esbuild: true
