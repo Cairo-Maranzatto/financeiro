@@ -1,6 +1,6 @@
 # AGENTS.md — Referência Estrutural Rápida
 
-> Status do projeto: 🔴 **Em planejamento.** Nenhum código foi escrito ainda. Este arquivo existe para que qualquer pessoa (ou agente de IA) que assuma o desenvolvimento entenda a estrutura completa em poucos minutos, sem precisar ler os 31 seções do planejamento macro inteiro. Para o "porquê" de cada decisão, siga os links indicados.
+> Status do projeto: 🟢 **MVP em produção.** Todas as Fases 0–6 foram implementadas e o app está publicado em https://financeiro-virid-phi.vercel.app/. Este arquivo existe para que qualquer pessoa (ou agente de IA) que assuma o desenvolvimento entenda a estrutura completa em poucos minutos, sem precisar ler as 31 seções do planejamento macro inteiro. Para o "porquê" de cada decisão, siga os links indicados.
 
 ## Antes de programar qualquer linha de código
 
@@ -120,3 +120,18 @@ Anexos/comprovantes em transações · Exportação de dados (LGPD) · Conversã
 ## Ordem de Desenvolvimento
 
 Fase 0 (Fundação) → Fase 1 (Core Ledger) → Fase 2 (Cartões) → Fase 3 (Dashboard/PWA) → Fase 4 (Orçamentos/Recorrências) → Fase 5 (Empréstimos/Metas/Busca) → Fase 6 (Hardening/Lançamento). Detalhe completo em [fases/INDICE.md](fases/INDICE.md).
+
+**Todas as fases concluídas.** App em produção: https://financeiro-virid-phi.vercel.app/
+
+## Stack Real Implantada (pode diferir levemente do planejamento original)
+
+- **Next.js 16.2.9** com Turbopack e App Router. Middleware usa `src/proxy.ts` (`export { proxy }`) — Next 16 deprecou `middleware.ts`.
+- **Sentry:** configurado via `src/instrumentation.ts` (`register()` hook) — **não** `withSentryConfig` (incompatível com Turbopack).
+- **pnpm 11:** `allowBuilds` configurado em `pnpm-workspace.yaml` (não em `package.json` — campo ignorado no pnpm 11).
+- **31 rotas** em produção (28 estáticas + 9 dinâmicas/API).
+- **Vitest 28/28 testes** passando; 3 golden paths Playwright em `e2e/`.
+- **Vercel Cron:** `vercel.json` com `close-invoices` às 03:00 UTC e `generate-recurrences` às 04:00 UTC.
+
+## Próximas Evoluções Possíveis (V2)
+
+Exportação de dados (CSV/PDF) · Conversão cambial · Notificações push · Relatórios com gráficos (recharts) · Open Finance · Rate limiting de API · Sincronização offline de escrita.

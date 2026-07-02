@@ -4,6 +4,22 @@ import { currencySchema } from "@/features/accounts/domain/schemas"
 
 export const transactionTypeSchema = z.enum(["receita", "despesa"])
 
+export const categoryTypeSchema = z.enum(["Despesa", "Receita", "Ambas"])
+export type CategoryType = z.infer<typeof categoryTypeSchema>
+
+export const createCategorySchema = z.object({
+  name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres."),
+  type: categoryTypeSchema,
+})
+export type CreateCategoryInput = z.infer<typeof createCategorySchema>
+
+export const updateCategorySchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres."),
+  type: categoryTypeSchema,
+})
+export type UpdateCategoryInput = z.infer<typeof updateCategorySchema>
+
 export const createTransactionSchema = z.object({
   accountId: z.uuid("Selecione uma conta."),
   categoryId: z.uuid("Selecione uma categoria."),

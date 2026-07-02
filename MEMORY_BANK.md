@@ -15,25 +15,34 @@
 
 ## Contexto Atual
 
-_(Atualizado em: 2026-07-01)_
+_(Atualizado em: 2026-07-02)_
 
-- **Fase do projeto:** **Todas as fases (0–6) implementadas e validadas com build de produção.** O projeto está pronto para deploy.
-- **Próximo passo imediato:** Deploy na Vercel:
-  1. Conectar repositório no painel da Vercel
-  2. Adicionar env vars: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`, `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN`
-  3. O `vercel.json` já define os cron jobs (03:00 UTC close-invoices, 04:00 UTC generate-recurrences)
-  4. Para E2E em CI: adicionar `TEST_EMAIL`, `TEST_PASSWORD` como secrets do GitHub Actions
-- **Pendências pós-deploy:**
-  - Trocar senha do banco Supabase (Project Settings → Database → Reset password)
-  - Criar conta de teste isolada no Supabase para os testes E2E
-  - Configurar DSN no Sentry e adicionar ao `.env.local`
-- **O que está pronto:** repositório Next.js + Supabase completo com 31 rotas, 7 migrations aplicadas, `@sentry/nextjs` configurado via `instrumentation.ts` (Turbopack-compatível), logger JSON estruturado em todos os Route Handlers críticos, 3 golden paths E2E com Playwright, CI com job e2e condicional, `vercel.json` com cron. Build valida: `tsc --noEmit` OK, `eslint` 0 erros, `vitest` 28/28, `next build` OK.
+- **Fase do projeto:** 🟢 **MVP em produção.** Todas as Fases 0–6 concluídas e deployadas.
+- **URL de produção:** https://financeiro-virid-phi.vercel.app/
+- **Estado do repositório:** tudo commitado e sincronizado com GitHub (`master`). CI verde.
+- **Infraestrutura ativa:**
+  - Supabase cloud (project `xtyrsoeyreicinlvycwk`) — 7 migrations aplicadas, RLS ativo em todas as tabelas.
+  - Vercel — Next.js 16.2.9, cron jobs ativos (`close-invoices` 03h UTC, `generate-recurrences` 04h UTC).
+  - GitHub Actions CI — lint → typecheck → vitest → build em cada push/PR.
+- **Pendências abertas (não bloqueiam uso):**
+  - Trocar senha do banco Supabase (Project Settings → Database → Reset password) — senha `Senha984746@` foi exposta no histórico do chat.
+  - Configurar DSN do Sentry (opcional — app funciona sem; erros ficam invisíveis sem ele).
+  - Criar conta de teste isolada para rodar os testes E2E Playwright em CI (`TEST_EMAIL`/`TEST_PASSWORD`).
+- **Próximas evoluções possíveis (V2):** exportação CSV, conversão cambial, notificações push, gráficos (recharts), Open Finance.
 
 ---
 
 ## Linha do Tempo de Progresso
 
 _(Mais recente no topo. Uma entrada por sessão/marco relevante.)_
+
+### 2026-07-02 — MVP em produção: deploy Vercel + configuração Supabase Auth
+
+1. **Deploy na Vercel** concluído — repositório conectado, preset Next.js detectado automaticamente, pnpm detectado via `pnpm-lock.yaml`. URL de produção: https://financeiro-virid-phi.vercel.app/
+2. **Env vars configuradas** na Vercel: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`.
+3. **Supabase Auth configurado** para domínio de produção: Site URL e Redirect URLs atualizadas para `https://financeiro-virid-phi.vercel.app` e `https://financeiro-virid-phi.vercel.app/auth/callback`.
+4. **Build and Output Settings** mantidos como default da Vercel (não customizados) — Vercel detecta pnpm + Next.js automaticamente.
+5. Todas as fases do MVP validadas em produção.
 
 ### 2026-07-01 — Fase 6 (Hardening & Lançamento): observabilidade, E2E, CI, deploy config
 
@@ -163,15 +172,15 @@ Continuação da mesma sessão que fechou a Fase 0 (ver entrada abaixo). Resumo 
 
 _(Atualize o status conforme o trabalho avança. Status possíveis: `Não iniciada` · `Em andamento` · `Concluída` · `Bloqueada`.)_
 
-| Fase                             | Status                                     | Última atualização | Observações                                                                                                                                                                                                                                                                                               |
-| -------------------------------- | ------------------------------------------ | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Fase 0 — Fundação                | Concluída (para fins de dev)               | 2026-06-30         | Migration aplicada no cloud, tipos reais gerados, RLS testado e aprovado, fluxo de Auth validado de ponta a ponta no navegador (achou e corrigiu bug de vazamento de senha na URL). Restam só itens fora do alcance do agente: 1º commit + push pro GitHub (CI nunca rodou remotamente), conectar Vercel. |
-| Fase 1 — Core Ledger             | Concluída                                  | 2026-07-01         | Validado na UI real pelo usuário. Bugs de UX encontrados e corrigidos durante os testes (backfill categories, SelectValue label, Select uncontrolled warning).                                                                                                                                            |
-| Fase 2 — Cartões de Crédito      | Concluída                                  | 2026-07-01         | Validada na UI real pelo usuário (cartão criado + compra registrada com sucesso).                                                                                                                                                                                                                         |
-| Fase 3 — Dashboard & PWA         | Implementada (pendente teste manual em UI) | 2026-07-01         | Dashboard principal com patrimônio por moeda, gastos do mês, top categorias, últimas transações. Migration + 3 DB functions + 9 testes. Build 22 rotas — limpo.                                                                                                                                           |
-| Fase 4 — Planning & Recorrências | Implementada (pendente teste manual em UI) | 2026-07-01         | Orçamentos por categoria com barra de progresso, regras de recorrência com geração automática via cron. 5 migrations aplicadas, build 22 rotas — limpo.                                                                                                                                                   |
-| Fase 5 — Passivos, Metas & Busca | Implementada (pendente teste manual em UI) | 2026-07-01         | Empréstimos Tabela Price, metas com aportes, busca global com debounce. 3 migrations. Build 28 rotas — limpo.                                                                                                                                                                                             |
-| Fase 6 — Hardening & Lançamento  | Não iniciada                               | 2026-06-26         | —                                                                                                                                                                                                                                                                                                         |
+| Fase                             | Status       | Última atualização | Observações                                                                                                                                                                                            |
+| -------------------------------- | ------------ | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Fase 0 — Fundação                | ✅ Concluída | 2026-06-30         | Migration aplicada no cloud, tipos gerados, RLS testado, Auth validado no navegador (bug de vazamento de senha na URL corrigido).                                                                      |
+| Fase 1 — Core Ledger             | ✅ Concluída | 2026-07-01         | Validado na UI real. Bugs corrigidos: backfill categories, SelectValue label, Select uncontrolled warning.                                                                                             |
+| Fase 2 — Cartões de Crédito      | ✅ Concluída | 2026-07-01         | Validado na UI real (cartão + compra + fatura).                                                                                                                                                        |
+| Fase 3 — Dashboard & PWA         | ✅ Concluída | 2026-07-02         | Dashboard com patrimônio por moeda, gastos do mês, top categorias. Validado em produção.                                                                                                               |
+| Fase 4 — Planning & Recorrências | ✅ Concluída | 2026-07-02         | Orçamentos com barra de progresso, recorrências automáticas via cron. Validado em produção.                                                                                                            |
+| Fase 5 — Passivos, Metas & Busca | ✅ Concluída | 2026-07-02         | Empréstimos (Tabela Price), metas com aportes, busca global. Validado em produção.                                                                                                                     |
+| Fase 6 — Hardening & Lançamento  | ✅ Concluída | 2026-07-02         | Sentry via `instrumentation.ts`, logger JSON, Playwright E2E (3 golden paths), CI com job e2e condicional, `vercel.json` com cron. Deploy em https://financeiro-virid-phi.vercel.app/ — **MVP ativo**. |
 
 ---
 

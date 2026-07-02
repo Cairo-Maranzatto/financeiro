@@ -7,11 +7,18 @@ import {
   createTransaction,
   fetchTransactions,
 } from "@/features/transactions/api/transactions"
-import { fetchCategories } from "@/features/transactions/api/categories"
+import {
+  fetchCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory,
+} from "@/features/transactions/api/categories"
 import { transferBetweenAccounts } from "@/features/transactions/api/transfer"
 import type {
   CreateTransactionInput,
   TransferInput,
+  CreateCategoryInput,
+  UpdateCategoryInput,
 } from "@/features/transactions/domain/schemas"
 
 export function useTransactions(accountId?: string) {
@@ -56,6 +63,42 @@ export function useTransfer() {
       queryClient.invalidateQueries({ queryKey: ["transactions"] })
       queryClient.invalidateQueries({ queryKey: ["accounts"] })
       queryClient.invalidateQueries({ queryKey: ["dashboard-summary"] })
+    },
+  })
+}
+
+export function useCreateCategory() {
+  const supabase = createClient()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (input: CreateCategoryInput) => createCategory(supabase, input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] })
+    },
+  })
+}
+
+export function useUpdateCategory() {
+  const supabase = createClient()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (input: UpdateCategoryInput) => updateCategory(supabase, input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] })
+    },
+  })
+}
+
+export function useDeleteCategory() {
+  const supabase = createClient()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: string) => deleteCategory(supabase, id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] })
     },
   })
 }
