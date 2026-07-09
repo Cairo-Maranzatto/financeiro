@@ -3,12 +3,13 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import type { z } from "zod"
 
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
 import { Label } from "@/shared/ui/label"
+import { CurrencyInput } from "@/shared/components/currency-input"
 import { useCreateCreditCard } from "@/features/credit-cards/hooks/use-credit-cards"
 import {
   createCreditCardSchema,
@@ -23,6 +24,7 @@ export function CreditCardForm() {
   const create = useCreateCreditCard()
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<FormInput, unknown, CreateCreditCardInput>({
@@ -60,12 +62,17 @@ export function CreditCardForm() {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="creditLimit">Limite (R$)</Label>
-        <Input
-          id="creditLimit"
-          type="number"
-          step="any"
-          {...register("creditLimit")}
+        <Label htmlFor="creditLimit">Limite</Label>
+        <Controller
+          name="creditLimit"
+          control={control}
+          render={({ field }) => (
+            <CurrencyInput
+              id="creditLimit"
+              value={Number(field.value) || 0}
+              onChange={field.onChange}
+            />
+          )}
         />
         {errors.creditLimit && (
           <p className="text-destructive text-sm">

@@ -9,6 +9,7 @@ import type { z } from "zod"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
 import { Label } from "@/shared/ui/label"
+import { CurrencyInput } from "@/shared/components/currency-input"
 import {
   Select,
   SelectContent,
@@ -140,7 +141,17 @@ export function TransferForm() {
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="amount">Valor</Label>
-        <Input id="amount" type="number" step="any" {...register("amount")} />
+        <Controller
+          name="amount"
+          control={control}
+          render={({ field }) => (
+            <CurrencyInput
+              id="amount"
+              value={Number(field.value) || 0}
+              onChange={field.onChange}
+            />
+          )}
+        />
         {errors.amount && (
           <p className="text-destructive text-sm">{errors.amount.message}</p>
         )}

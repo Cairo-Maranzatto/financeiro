@@ -3,12 +3,13 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Controller, useForm } from "react-hook-form"
+import { Controller, useForm, useWatch } from "react-hook-form"
 import type { z } from "zod"
 
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
 import { Label } from "@/shared/ui/label"
+import { CurrencyInput } from "@/shared/components/currency-input"
 import {
   Select,
   SelectContent,
@@ -43,6 +44,8 @@ export function AccountForm() {
       occurredAt: new Date().toISOString().slice(0, 10),
     },
   })
+
+  const currency = useWatch({ control, name: "currency" })
 
   async function onSubmit(values: CreateAccountInput) {
     setServerError(null)
@@ -100,11 +103,17 @@ export function AccountForm() {
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="initialBalance">Saldo inicial</Label>
-        <Input
-          id="initialBalance"
-          type="number"
-          step="any"
-          {...register("initialBalance")}
+        <Controller
+          name="initialBalance"
+          control={control}
+          render={({ field }) => (
+            <CurrencyInput
+              id="initialBalance"
+              value={Number(field.value) || 0}
+              onChange={field.onChange}
+              currency={currency}
+            />
+          )}
         />
         {errors.initialBalance && (
           <p className="text-destructive text-sm">

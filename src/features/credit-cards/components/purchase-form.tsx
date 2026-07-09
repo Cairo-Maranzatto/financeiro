@@ -9,13 +9,8 @@ import type { z } from "zod"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
 import { Label } from "@/shared/ui/label"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/ui/select"
+import { CurrencyInput } from "@/shared/components/currency-input"
+import { CategorySelect } from "@/shared/components/category-select"
 import { useCategories } from "@/features/transactions/hooks/use-transactions"
 import { useRegisterPurchase } from "@/features/credit-cards/hooks/use-credit-cards"
 import {
@@ -25,8 +20,6 @@ import {
 import type { CreditCard } from "@/features/credit-cards/api/credit-cards"
 
 type FormInput = z.input<typeof purchaseSchema>
-
-const SISTEMA_SALDO_INICIAL = "Saldo Inicial"
 
 export function PurchaseForm({
   card,
@@ -55,12 +48,6 @@ export function PurchaseForm({
     },
   })
 
-  const availableCategories = (categories ?? []).filter(
-    (c) =>
-      c.name !== SISTEMA_SALDO_INICIAL &&
-      (c.type === "Despesa" || c.type === "Ambas")
-  )
-
   async function onSubmit(values: PurchaseInput) {
     setServerError(null)
     try {
@@ -87,27 +74,17 @@ export function PurchaseForm({
         <Controller
           name="categoryId"
           control={control}
-          render={({ field }) => {
-            const label = availableCategories.find(
-              (c) => c.id === field.value
-            )?.name
-            return (
-              <Select value={field.value ?? ""} onValueChange={field.onChange}>
-                <SelectTrigger id="categoryId" className="w-full">
-                  <SelectValue placeholder="Selecione a categoria">
-                    {label}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {availableCategories.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )
-          }}
+          render={({ field }) => (
+            <CategorySelect
+              categories={categories ?? []}
+              value={field.value}
+              onChange={field.onChange}
+              filter={(c) =>
+                !c.is_internal && (c.type === "Despesa" || c.type === "Ambas")
+              }
+              placeholder="Selecione a categoria"
+            />
+          )}
         />
         {errors.categoryId && (
           <p className="text-destructive text-sm">
@@ -118,11 +95,16 @@ export function PurchaseForm({
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="totalAmount">Valor total</Label>
-        <Input
-          id="totalAmount"
-          type="number"
-          step="any"
-          {...register("totalAmount")}
+        <Controller
+          name="totalAmount"
+          control={control}
+          render={({ field }) => (
+            <CurrencyInput
+              id="totalAmount"
+              value={Number(field.value) || 0}
+              onChange={field.onChange}
+            />
+          )}
         />
         {errors.totalAmount && (
           <p className="text-destructive text-sm">

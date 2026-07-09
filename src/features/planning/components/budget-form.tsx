@@ -1,17 +1,15 @@
 "use client"
 
-import { useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/ui/select"
+import { CategorySelect } from "@/shared/components/category-select"
 import { createBudgetSchema } from "@/features/planning/domain/schemas"
+import {
+  CurrencyInput,
+  INPUT_PLAIN_CLASS,
+} from "@/shared/components/currency-input"
 import { useCreateBudget } from "@/features/planning/hooks/use-planning"
 import { useCategories } from "@/features/transactions/hooks/use-transactions"
 import { useUserSettings } from "@/features/identity/hooks/use-user-settings"
@@ -37,11 +35,9 @@ export function BudgetForm({ onSuccess }: { onSuccess?: () => void }) {
     )
   })()
 
-  const expenseCategories =
-    categories?.filter((c) => c.type === "Despesa" || c.type === "Ambas") ?? []
-
   const {
     register,
+    control,
     handleSubmit,
     setValue,
     watch,
@@ -67,25 +63,14 @@ export function BudgetForm({ onSuccess }: { onSuccess?: () => void }) {
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
         <label className="text-sm font-medium">Categoria</label>
-        <Select
-          value={categoryId ?? ""}
-          onValueChange={(v) => {
-            if (v !== null) setValue("categoryId", v, { shouldValidate: true })
-          }}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Selecione uma categoria">
-              {expenseCategories.find((c) => c.id === categoryId)?.name}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {expenseCategories.map((cat) => (
-              <SelectItem key={cat.id} value={cat.id}>
-                {cat.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <CategorySelect
+          categories={categories ?? []}
+          value={categoryId}
+          onChange={(v) => setValue("categoryId", v, { shouldValidate: true })}
+          filter={(c) => c.type === "Despesa"}
+          mode="parent"
+          placeholder="Selecione uma categoria"
+        />
         {errors.categoryId && (
           <p className="text-destructive text-xs">
             {errors.categoryId.message}
@@ -94,14 +79,17 @@ export function BudgetForm({ onSuccess }: { onSuccess?: () => void }) {
       </div>
 
       <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium">Limite (R$)</label>
-        <input
-          {...register("amountLimit")}
-          type="number"
-          step="0.01"
-          min="0.01"
-          placeholder="0,00"
-          className="rounded-md border px-3 py-2 text-sm"
+        <label className="text-sm font-medium">Limite</label>
+        <Controller
+          control={control}
+          name="amountLimit"
+          render={({ field }) => (
+            <CurrencyInput
+              value={Number(field.value) || 0}
+              onChange={field.onChange}
+              className={INPUT_PLAIN_CLASS}
+            />
+          )}
         />
         {errors.amountLimit && (
           <p className="text-destructive text-xs">

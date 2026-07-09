@@ -1,12 +1,12 @@
 # AGENTS.md — Referência Estrutural Rápida
 
-> Status do projeto: 🟢 **MVP em produção.** Todas as Fases 0–6 foram implementadas e o app está publicado em https://financeiro-virid-phi.vercel.app/. Este arquivo existe para que qualquer pessoa (ou agente de IA) que assuma o desenvolvimento entenda a estrutura completa em poucos minutos, sem precisar ler as 31 seções do planejamento macro inteiro. Para o "porquê" de cada decisão, siga os links indicados.
+> Status do projeto: 🟢 **MVP em produção + Aprimoramento de Categorias implementado.** Todas as Fases 0–6 do MVP e todas as Fases A0–A6 de [fases/aprimoramento/](fases/aprimoramento/INDICE.md) (taxonomia hierárquica de categorias — 16 pais + 76 subcategorias) foram implementadas e aplicadas no banco de produção. **Atenção:** o código ainda não foi commitado/deployado na Vercel nesta sessão — ver `MEMORY_BANK.md` → Contexto Atual antes de assumir que o app publicado em https://financeiro-virid-phi.vercel.app/ já reflete o aprimoramento. Este arquivo existe para que qualquer pessoa (ou agente de IA) que assuma o desenvolvimento entenda a estrutura completa em poucos minutos, sem precisar ler as 31 seções do planejamento macro inteiro. Para o "porquê" de cada decisão, siga os links indicados.
 
 ## Antes de programar qualquer linha de código
 
 1. Leia este arquivo até o fim (5-10 min).
-2. Abra [fases/INDICE.md](fases/INDICE.md) e comece pela Fase 0: [fases/FASE_00_FUNDACAO.md](fases/FASE_00_FUNDACAO.md).
-3. Em caso de dúvida sobre uma regra de negócio, consulte primeiro a seção correspondente em [PLANEJAMENTO_SISTEMA_FINANCEIRO.md](PLANEJAMENTO_SISTEMA_FINANCEIRO.md) antes de decidir por conta própria.
+2. Abra [fases/INDICE.md](fases/INDICE.md) para o histórico do MVP (concluído), e [fases/aprimoramento/INDICE.md](fases/aprimoramento/INDICE.md) para o trabalho em andamento (taxonomia de categorias).
+3. Em caso de dúvida sobre uma regra de negócio, consulte primeiro a seção correspondente em [PLANEJAMENTO_SISTEMA_FINANCEIRO.md](PLANEJAMENTO_SISTEMA_FINANCEIRO.md) (MVP) ou [fases/CATEGORIAS_REFERENCIA.md](fases/CATEGORIAS_REFERENCIA.md) (taxonomia de categorias) antes de decidir por conta própria.
 4. Ao concluir qualquer trabalho relevante (decisão, marco, bug crítico resolvido), registre em [MEMORY_BANK.md](MEMORY_BANK.md).
 
 ## Mapa de Documentação
@@ -85,6 +85,8 @@ Cada feature mantém `/api`, `/components`, `/domain`, `/hooks` internamente —
 - **RLS obrigatório:** toda tabela nova precisa de Row Level Security habilitado e policy testada no **mesmo PR** que a cria. Sem exceções, mesmo temporárias.
 - **Transferências são atômicas:** cria as duas pontas (saída/entrada) + rollback total se uma falhar.
 - **Categoria excluída** (soft delete) some dos seletores de novo lançamento, mas nunca quebra a exibição em transações históricas.
+- **Só folha é lançável (desde a Fase A2 do aprimoramento):** `transactions.category_id` e `recurrence_rules.category_id` só podem ser uma subcategoria ou especial sem filhos — nunca uma categoria-pai. Enforced por trigger (`validate_category_is_leaf`), não só client-side.
+- **Orçamento é sempre no nível pai (desde a Fase A2):** `budgets.category_id` só pode ser uma categoria-pai (tem subcategorias) — nunca uma folha. Enforced por trigger (`validate_budget_category_is_parent`). `get_budgets_with_usage()` soma as transações das subcategorias do pai orçado, não transações com `category_id` igual ao do budget.
 
 ## Convenções de Banco de Dados (Seção 25/28)
 
@@ -93,6 +95,7 @@ Cada feature mantém `/api`, `/components`, `/domain`, `/hooks` internamente —
 - Trigger de auditoria genérica (`set_audit_fields()`) popula `created_by`/`updated_by` via `auth.uid()`.
 - `public.user_settings` é 1:1 com `auth.users` (nunca estender `auth.users` diretamente).
 - Categorias padrão vêm de `system_categories` (catálogo global), copiadas para o usuário no onboarding via `system_category_id`.
+- **Taxonomia de categorias (desde 2026-07-08, aprimoramento em andamento):** `system_categories` tem hierarquia real de 2 níveis via `parent_id` (categoria-pai quando `null`) e uma flag `is_active` (categorias legadas da taxonomia flat original são mantidas com `is_active = false` só por integridade de FK — nunca deletadas, nunca copiadas para novos usuários). Fonte da taxonomia: [fases/CATEGORIAS_REFERENCIA.md](fases/CATEGORIAS_REFERENCIA.md) (16 categorias-pai + 76 subcategorias — a soma "71" no resumo daquele documento está incorreta, ver Log de Decisões do `MEMORY_BANK.md`). Trigger `validate_system_category_type()` garante que toda subcategoria herda o tipo (Receita/Despesa) do pai.
 
 ## Modelo de Segurança (Seção 16)
 
@@ -128,8 +131,8 @@ Fase 0 (Fundação) → Fase 1 (Core Ledger) → Fase 2 (Cartões) → Fase 3 (D
 - **Next.js 16.2.9** com Turbopack e App Router. Middleware usa `src/proxy.ts` (`export { proxy }`) — Next 16 deprecou `middleware.ts`.
 - **Sentry:** configurado via `src/instrumentation.ts` (`register()` hook) — **não** `withSentryConfig` (incompatível com Turbopack).
 - **pnpm 11:** `allowBuilds` configurado em `pnpm-workspace.yaml` (não em `package.json` — campo ignorado no pnpm 11).
-- **31 rotas** em produção (28 estáticas + 9 dinâmicas/API).
-- **Vitest 28/28 testes** passando; 3 golden paths Playwright em `e2e/`.
+- **29 rotas** no build local mais recente (após o aprimoramento de categorias — contagem pode divergir da última medição em produção até o próximo deploy).
+- **Vitest 34/34 testes** passando (28 do MVP + 6 novos de `financial-indicators.test.ts`); 3 golden paths Playwright em `e2e/`.
 - **Vercel Cron:** `vercel.json` com `close-invoices` às 03:00 UTC e `generate-recurrences` às 04:00 UTC.
 
 ## Próximas Evoluções Possíveis (V2)

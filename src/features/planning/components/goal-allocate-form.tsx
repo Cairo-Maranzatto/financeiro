@@ -14,6 +14,10 @@ import {
 import { allocateToGoalSchema } from "@/features/planning/domain/schemas"
 import { useAllocateToGoal } from "@/features/planning/hooks/use-goals"
 import { useAccounts } from "@/features/accounts/hooks/use-accounts"
+import {
+  CurrencyInput,
+  INPUT_PLAIN_CLASS,
+} from "@/shared/components/currency-input"
 
 type FormValues = z.input<typeof allocateToGoalSchema>
 type FormOutput = z.output<typeof allocateToGoalSchema>
@@ -52,13 +56,16 @@ export function GoalAllocateForm({
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
         <label className="text-sm font-medium">Valor do aporte</label>
-        <input
-          {...register("amount")}
-          type="number"
-          step="0.01"
-          min="0.01"
-          placeholder="0,00"
-          className="rounded-md border px-3 py-2 text-sm"
+        <Controller
+          control={control}
+          name="amount"
+          render={({ field }) => (
+            <CurrencyInput
+              value={Number(field.value) || 0}
+              onChange={field.onChange}
+              className={INPUT_PLAIN_CLASS}
+            />
+          )}
         />
         {errors.amount && (
           <p className="text-destructive text-xs">{errors.amount.message}</p>

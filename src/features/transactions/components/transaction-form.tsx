@@ -9,6 +9,8 @@ import type { z } from "zod"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
 import { Label } from "@/shared/ui/label"
+import { CurrencyInput } from "@/shared/components/currency-input"
+import { CategorySelect } from "@/shared/components/category-select"
 import {
   Select,
   SelectContent,
@@ -26,8 +28,6 @@ import {
   createTransactionSchema,
   type CreateTransactionInput,
 } from "@/features/transactions/domain/schemas"
-
-const SISTEMA_SALDO_INICIAL = "Saldo Inicial"
 
 type FormInput = z.input<typeof createTransactionSchema>
 
@@ -61,11 +61,6 @@ export function TransactionForm({
   const accountId = useWatch({ control, name: "accountId" })
   const selectedAccount = accounts?.find((account) => account.id === accountId)
   const categoryTypeLabel = type === "despesa" ? "Despesa" : "Receita"
-  const availableCategories = (categories ?? []).filter(
-    (category) =>
-      category.name !== SISTEMA_SALDO_INICIAL &&
-      (category.type === categoryTypeLabel || category.type === "Ambas")
-  )
 
   async function onSubmit(values: CreateTransactionInput) {
     setServerError(null)
@@ -157,27 +152,19 @@ export function TransactionForm({
         <Controller
           name="categoryId"
           control={control}
-          render={({ field }) => {
-            const label = availableCategories.find(
-              (c) => c.id === field.value
-            )?.name
-            return (
-              <Select value={field.value ?? ""} onValueChange={field.onChange}>
-                <SelectTrigger id="categoryId" className="w-full">
-                  <SelectValue placeholder="Selecione a categoria">
-                    {label}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {availableCategories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )
-          }}
+          render={({ field }) => (
+            <CategorySelect
+              categories={categories ?? []}
+              value={field.value}
+              onChange={field.onChange}
+              filter={(category) =>
+                !category.is_internal &&
+                (category.type === categoryTypeLabel ||
+                  category.type === "Ambas")
+              }
+              placeholder="Selecione a categoria"
+            />
+          )}
         />
         {errors.categoryId && (
           <p className="text-destructive text-sm">
@@ -188,7 +175,17 @@ export function TransactionForm({
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="amount">Valor</Label>
-        <Input id="amount" type="number" step="any" {...register("amount")} />
+        <Controller
+          name="amount"
+          control={control}
+          render={({ field }) => (
+            <CurrencyInput
+              id="amount"
+              value={Number(field.value) || 0}
+              onChange={field.onChange}
+            />
+          )}
+        />
         {errors.amount && (
           <p className="text-destructive text-sm">{errors.amount.message}</p>
         )}

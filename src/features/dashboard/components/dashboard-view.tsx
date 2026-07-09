@@ -8,6 +8,7 @@ import { useDashboardSummary } from "@/features/dashboard/hooks/use-dashboard"
 import { BalanceCard } from "@/features/dashboard/components/balance-card"
 import { CategoryBars } from "@/features/dashboard/components/category-bars"
 import { RecentTransactions } from "@/features/dashboard/components/recent-transactions"
+import { FinancialIndicators } from "@/features/dashboard/components/financial-indicators"
 
 function formatDateStr(
   dateStr: string,
@@ -121,6 +122,14 @@ export function DashboardView() {
         <section className="flex flex-col gap-3">
           <SectionTitle>Por categoria</SectionTitle>
           <CategoryBars categories={data!.topCategories} />
+        </section>
+      )}
+
+      {/* Indicadores financeiros */}
+      {!isLoading && data && (
+        <section className="flex flex-col gap-3">
+          <SectionTitle>Indicadores</SectionTitle>
+          <FinancialIndicators indicators={data.indicators} />
         </section>
       )}
 

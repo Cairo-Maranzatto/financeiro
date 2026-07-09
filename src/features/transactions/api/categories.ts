@@ -7,16 +7,21 @@ import type {
   UpdateCategoryInput,
 } from "@/features/transactions/domain/schemas"
 
-export type Category = Database["public"]["Tables"]["categories"]["Row"]
+export type Category = Database["public"]["Tables"]["categories"]["Row"] & {
+  is_internal: boolean
+}
 
 export async function fetchCategories(supabase: SupabaseClient<Database>) {
   const { data, error } = await supabase
     .from("categories")
-    .select("*")
+    .select("*, system_categories(is_internal)")
     .order("name", { ascending: true })
 
   if (error) throw error
-  return data
+  return data.map(({ system_categories, ...category }) => ({
+    ...category,
+    is_internal: system_categories?.is_internal ?? false,
+  }))
 }
 
 export async function createCategory(
@@ -25,7 +30,12 @@ export async function createCategory(
 ) {
   const { data, error } = await supabase
     .from("categories")
-    .insert({ name: input.name, type: input.type })
+    .insert({
+      name: input.name,
+      type: input.type,
+      parent_category_id: input.parentCategoryId ?? null,
+      icon: input.parentCategoryId ? null : (input.icon ?? null),
+    })
     .select("id")
     .single()
 
@@ -39,7 +49,11 @@ export async function updateCategory(
 ) {
   const { error } = await supabase
     .from("categories")
-    .update({ name: input.name, type: input.type })
+    .update({
+      name: input.name,
+      type: input.type,
+      icon: input.parentCategoryId ? null : (input.icon ?? null),
+    })
     .eq("id", input.id)
 
   if (error) throw error

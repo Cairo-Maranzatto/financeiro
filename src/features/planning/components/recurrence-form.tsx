@@ -12,11 +12,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select"
+import { CategorySelect } from "@/shared/components/category-select"
 import { createRecurrenceSchema } from "@/features/planning/domain/schemas"
 import { useCreateRecurrenceRule } from "@/features/planning/hooks/use-planning"
 import { useAccounts } from "@/features/accounts/hooks/use-accounts"
 import { useCategories } from "@/features/transactions/hooks/use-transactions"
 import type { Currency } from "@/features/accounts/domain/schemas"
+import {
+  CurrencyInput,
+  INPUT_PLAIN_CLASS,
+} from "@/shared/components/currency-input"
 
 type FormValues = z.input<typeof createRecurrenceSchema>
 type FormOutput = z.output<typeof createRecurrenceSchema>
@@ -57,8 +62,6 @@ export function RecurrenceForm({ onSuccess }: { onSuccess?: () => void }) {
   }, [accountId, accounts, setValue])
 
   const typeLabel = type === "despesa" ? "Despesa" : "Receita"
-  const filteredCategories =
-    categories?.filter((c) => c.type === typeLabel || c.type === "Ambas") ?? []
 
   function onSubmit(values: FormOutput) {
     create(values, {
@@ -133,20 +136,15 @@ export function RecurrenceForm({ onSuccess }: { onSuccess?: () => void }) {
           control={control}
           name="categoryId"
           render={({ field }) => (
-            <Select value={field.value ?? ""} onValueChange={field.onChange}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Selecione uma categoria">
-                  {filteredCategories.find((c) => c.id === field.value)?.name}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {filteredCategories.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <CategorySelect
+              categories={categories ?? []}
+              value={field.value}
+              onChange={field.onChange}
+              filter={(c) =>
+                !c.is_internal && (c.type === typeLabel || c.type === "Ambas")
+              }
+              placeholder="Selecione uma categoria"
+            />
           )}
         />
         {errors.categoryId && (
@@ -160,13 +158,16 @@ export function RecurrenceForm({ onSuccess }: { onSuccess?: () => void }) {
       <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-1">
           <label className="text-sm font-medium">Valor</label>
-          <input
-            {...register("amount")}
-            type="number"
-            step="0.01"
-            min="0.01"
-            placeholder="0,00"
-            className="rounded-md border px-3 py-2 text-sm"
+          <Controller
+            control={control}
+            name="amount"
+            render={({ field }) => (
+              <CurrencyInput
+                value={Number(field.value) || 0}
+                onChange={field.onChange}
+                className={INPUT_PLAIN_CLASS}
+              />
+            )}
           />
           {errors.amount && (
             <p className="text-destructive text-xs">{errors.amount.message}</p>

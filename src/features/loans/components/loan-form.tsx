@@ -14,6 +14,10 @@ import {
 } from "@/shared/ui/select"
 import { createLoanSchema } from "@/features/loans/domain/schemas"
 import {
+  CurrencyInput,
+  INPUT_PLAIN_CLASS,
+} from "@/shared/components/currency-input"
+import {
   calcLoanInstallments,
   totalLoanAmount,
 } from "@/features/loans/domain/loan-calculator"
@@ -97,13 +101,17 @@ export function LoanForm({ onSuccess }: { onSuccess?: (id: string) => void }) {
       <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-1">
           <label className="text-sm font-medium">Valor principal</label>
-          <input
-            {...register("principalAmount")}
-            type="number"
-            step="0.01"
-            min="0.01"
-            placeholder="0,00"
-            className="rounded-md border px-3 py-2 text-sm"
+          <Controller
+            control={control}
+            name="principalAmount"
+            render={({ field }) => (
+              <CurrencyInput
+                value={Number(field.value) || 0}
+                onChange={field.onChange}
+                currency={currency}
+                className={INPUT_PLAIN_CLASS}
+              />
+            )}
           />
           {errors.principalAmount && (
             <p className="text-destructive text-xs">

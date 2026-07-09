@@ -10,6 +10,8 @@ export type CategoryType = z.infer<typeof categoryTypeSchema>
 export const createCategorySchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres."),
   type: categoryTypeSchema,
+  parentCategoryId: z.uuid().optional(),
+  icon: z.string().optional(),
 })
 export type CreateCategoryInput = z.infer<typeof createCategorySchema>
 
@@ -17,6 +19,8 @@ export const updateCategorySchema = z.object({
   id: z.string().uuid(),
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres."),
   type: categoryTypeSchema,
+  parentCategoryId: z.uuid().optional(),
+  icon: z.string().optional(),
 })
 export type UpdateCategoryInput = z.infer<typeof updateCategorySchema>
 

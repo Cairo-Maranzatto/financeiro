@@ -1,6 +1,6 @@
 "use client"
 
-import { Controller, useForm } from "react-hook-form"
+import { Controller, useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 
@@ -13,6 +13,10 @@ import {
 } from "@/shared/ui/select"
 import { createGoalSchema } from "@/features/planning/domain/schemas"
 import { useCreateGoal } from "@/features/planning/hooks/use-goals"
+import {
+  CurrencyInput,
+  INPUT_PLAIN_CLASS,
+} from "@/shared/components/currency-input"
 
 type FormValues = z.input<typeof createGoalSchema>
 type FormOutput = z.output<typeof createGoalSchema>
@@ -30,6 +34,8 @@ export function GoalForm({ onSuccess }: { onSuccess?: () => void }) {
     resolver: zodResolver(createGoalSchema),
     defaultValues: { currency: "BRL" },
   })
+
+  const currency = useWatch({ control, name: "currency" })
 
   function onSubmit(values: FormOutput) {
     create(values, {
@@ -58,13 +64,17 @@ export function GoalForm({ onSuccess }: { onSuccess?: () => void }) {
       <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-1">
           <label className="text-sm font-medium">Valor alvo</label>
-          <input
-            {...register("targetAmount")}
-            type="number"
-            step="0.01"
-            min="0.01"
-            placeholder="0,00"
-            className="rounded-md border px-3 py-2 text-sm"
+          <Controller
+            control={control}
+            name="targetAmount"
+            render={({ field }) => (
+              <CurrencyInput
+                value={Number(field.value) || 0}
+                onChange={field.onChange}
+                currency={currency}
+                className={INPUT_PLAIN_CLASS}
+              />
+            )}
           />
           {errors.targetAmount && (
             <p className="text-destructive text-xs">

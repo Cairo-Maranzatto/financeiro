@@ -4,12 +4,19 @@ import { useState } from "react"
 
 import { CategoryForm } from "@/features/transactions/components/category-form"
 import { CategoriesList } from "@/features/transactions/components/categories-list"
-import { useCreateCategory } from "@/features/transactions/hooks/use-transactions"
+import {
+  useCategories,
+  useCreateCategory,
+} from "@/features/transactions/hooks/use-transactions"
 import type { CreateCategoryInput } from "@/features/transactions/domain/schemas"
 
 export default function CategoriasPage() {
   const [showForm, setShowForm] = useState(false)
   const { mutate: create, isPending } = useCreateCategory()
+  const { data: categories } = useCategories()
+  const parentOptions = (categories ?? []).filter(
+    (c) => !c.parent_category_id && c.type !== "Ambas"
+  )
 
   function handleCreate(values: CreateCategoryInput) {
     create(values, {
@@ -37,6 +44,7 @@ export default function CategoriasPage() {
         <div className="bg-card mb-6 rounded-lg border p-4">
           <h2 className="mb-4 text-sm font-semibold">Nova categoria</h2>
           <CategoryForm
+            parentOptions={parentOptions}
             onSubmit={handleCreate}
             onCancel={() => setShowForm(false)}
             isPending={isPending}

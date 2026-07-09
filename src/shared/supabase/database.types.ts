@@ -596,8 +596,10 @@ export type Database = {
           created_at: string
           icon: string | null
           id: string
+          is_active: boolean
           is_internal: boolean
           name: string
+          parent_id: string | null
           sort_order: number
           type: string
         }
@@ -605,8 +607,10 @@ export type Database = {
           created_at?: string
           icon?: string | null
           id?: string
+          is_active?: boolean
           is_internal?: boolean
           name: string
+          parent_id?: string | null
           sort_order?: number
           type: string
         }
@@ -614,12 +618,22 @@ export type Database = {
           created_at?: string
           icon?: string | null
           id?: string
+          is_active?: boolean
           is_internal?: boolean
           name?: string
+          parent_id?: string | null
           sort_order?: number
           type?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "system_categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "system_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       transactions: {
         Row: {
@@ -869,8 +883,21 @@ export type Database = {
           total: number
         }[]
       }
+      get_category_expenses_by_parent: {
+        Args: { p_end_exclusive: string; p_start: string; p_timezone?: string }
+        Returns: {
+          parent_category_id: string
+          parent_category_name: string
+          parent_system_category_id: string
+          total: number
+        }[]
+      }
       get_invoice_total: { Args: { p_invoice_id: string }; Returns: number }
       get_month_expenses_total: {
+        Args: { p_end_exclusive: string; p_start: string; p_timezone?: string }
+        Returns: number
+      }
+      get_month_income_total: {
         Args: { p_end_exclusive: string; p_start: string; p_timezone?: string }
         Returns: number
       }
