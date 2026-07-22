@@ -5,7 +5,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createClient } from "@/shared/supabase/client"
 import {
   createTransaction,
+  fetchTransactionById,
   fetchTransactions,
+  updateTransaction,
 } from "@/features/transactions/api/transactions"
 import {
   fetchCategories,
@@ -13,10 +15,16 @@ import {
   updateCategory,
   deleteCategory,
 } from "@/features/transactions/api/categories"
-import { transferBetweenAccounts } from "@/features/transactions/api/transfer"
+import {
+  fetchTransferByTransactionId,
+  transferBetweenAccounts,
+  updateTransfer,
+} from "@/features/transactions/api/transfer"
 import type {
   CreateTransactionInput,
   TransferInput,
+  UpdateTransactionInput,
+  UpdateTransferInput,
   CreateCategoryInput,
   UpdateCategoryInput,
 } from "@/features/transactions/domain/schemas"
@@ -39,6 +47,16 @@ export function useCategories() {
   })
 }
 
+export function useTransaction(id: string) {
+  const supabase = createClient()
+
+  return useQuery({
+    queryKey: ["transaction", id],
+    queryFn: () => fetchTransactionById(supabase, id),
+    enabled: !!id,
+  })
+}
+
 export function useCreateTransaction() {
   const supabase = createClient()
   const queryClient = useQueryClient()
@@ -54,6 +72,22 @@ export function useCreateTransaction() {
   })
 }
 
+export function useUpdateTransaction() {
+  const supabase = createClient()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (input: UpdateTransactionInput) =>
+      updateTransaction(supabase, input),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["transactions"] })
+      queryClient.invalidateQueries({ queryKey: ["transaction", variables.id] })
+      queryClient.invalidateQueries({ queryKey: ["accounts"] })
+      queryClient.invalidateQueries({ queryKey: ["dashboard-summary"] })
+    },
+  })
+}
+
 export function useTransfer() {
   const queryClient = useQueryClient()
 
@@ -61,6 +95,30 @@ export function useTransfer() {
     mutationFn: (input: TransferInput) => transferBetweenAccounts(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["transactions"] })
+      queryClient.invalidateQueries({ queryKey: ["accounts"] })
+      queryClient.invalidateQueries({ queryKey: ["dashboard-summary"] })
+    },
+  })
+}
+
+export function useTransferByTransactionId(transactionId: string) {
+  const supabase = createClient()
+
+  return useQuery({
+    queryKey: ["transfer", transactionId],
+    queryFn: () => fetchTransferByTransactionId(supabase, transactionId),
+    enabled: !!transactionId,
+  })
+}
+
+export function useUpdateTransfer() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (input: UpdateTransferInput) => updateTransfer(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["transactions"] })
+      queryClient.invalidateQueries({ queryKey: ["transfer"] })
       queryClient.invalidateQueries({ queryKey: ["accounts"] })
       queryClient.invalidateQueries({ queryKey: ["dashboard-summary"] })
     },

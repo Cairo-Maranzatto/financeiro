@@ -15,13 +15,13 @@
 
 ## Contexto Atual
 
-_(Atualizado em: 2026-07-08)_
+_(Atualizado em: 2026-07-21)_
 
-- **Fase do projeto:** 🟢 **MVP em produção + Aprimoramento de Categorias implementado (código e banco).** Fases 0–6 do MVP e Fases A0–A6 do aprimoramento (`fases/aprimoramento/INDICE.md`) concluídas nesta sessão. Banco de produção já migrado (5 migrations aplicadas). **Pendente:** commit/push do código para o GitHub (não feito automaticamente — protocolo do agente) e checklist manual/E2E em navegador real (sem credenciais/browser automation nesta sessão).
+- **Fase do projeto:** 🟢 **MVP em produção + Aprimoramento de Categorias implementado (código e banco).** Fases 0–6 do MVP e Fases A0–A6 do aprimoramento (`fases/aprimoramento/INDICE.md`) concluídas. Banco de produção já migrado (6 migrations do aprimoramento aplicadas, incluindo `20260709120000`). **Pendente:** commit/push do código para o GitHub (não feito automaticamente — protocolo do agente) e checklist manual/E2E em navegador real (sem credenciais/browser automation nesta sessão).
 - **URL de produção:** https://financeiro-virid-phi.vercel.app/ — ainda roda o código de ANTES desta sessão até o deploy ser feito (push para `master` + Vercel redeploy automático).
 - **Estado do repositório:** todas as mudanças desta sessão estão no working tree, **não commitadas** (ver `git status`). Banco de produção (Supabase) já está à frente do código deployado na Vercel — normal até o próximo deploy, mas evitar rodar migrations novas sem antes conferir esse estado se retomar o trabalho em outra sessão.
 - **Infraestrutura ativa:**
-  - Supabase cloud (project `xtyrsoeyreicinlvycwk`) — RLS ativo em todas as tabelas. 5 novas migrations desde a última entrada (`20260708140000` a `20260708170000`).
+  - Supabase cloud (project `xtyrsoeyreicinlvycwk`) — RLS ativo em todas as tabelas. 6 migrations do aprimoramento aplicadas (`20260708140000` a `20260709120000`).
   - Vercel — Next.js 16.2.9, cron jobs ativos (`close-invoices` 03h UTC, `generate-recurrences` 04h UTC).
   - GitHub Actions CI — lint → typecheck → vitest → build em cada push/PR.
 - **Pendências abertas (não bloqueiam uso):**
@@ -38,6 +38,13 @@ _(Atualizado em: 2026-07-08)_
 ## Linha do Tempo de Progresso
 
 _(Mais recente no topo. Uma entrada por sessão/marco relevante.)_
+
+### 2026-07-21 — Sincronização de migration pendente no Supabase (produção)
+
+1. **Diagnóstico de drift de migrations:** `pnpm exec supabase migration list` mostrou 1 migration local sem correspondente remoto: `20260709120000_transactions_edit_transfer.sql`.
+2. **Aplicação da pendência:** `pnpm exec supabase db push` executado com confirmação explícita (`[Y/n]`), aplicando a migration pendente no projeto `xtyrsoeyreicinlvycwk`.
+3. **Validação pós-push:** nova execução de `pnpm exec supabase migration list` confirmou alinhamento total entre colunas Local e Remote (20/20 migrations casadas).
+4. **Observação operacional:** o CLI exibiu warning de cache envolvendo Docker (`failed to cache migrations catalog`), mas o push finalizou com sucesso (`Finished supabase db push`) e não bloqueou a sincronização remota.
 
 ### 2026-07-08 — Aprimoramento de Categorias: Fase A6 (validação e fechamento) — todas as fases A0-A6 concluídas
 

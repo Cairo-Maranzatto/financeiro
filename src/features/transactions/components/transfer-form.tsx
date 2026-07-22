@@ -18,19 +18,25 @@ import {
   SelectValue,
 } from "@/shared/ui/select"
 import { useAccounts } from "@/features/accounts/hooks/use-accounts"
-import { useTransfer } from "@/features/transactions/hooks/use-transactions"
+import {
+  useTransfer,
+  useUpdateTransfer,
+} from "@/features/transactions/hooks/use-transactions"
 import {
   transferSchema,
   type TransferInput,
 } from "@/features/transactions/domain/schemas"
+import type { TransferDetails } from "@/features/transactions/api/transfer"
 
 type FormInput = z.input<typeof transferSchema>
 
-export function TransferForm() {
+export function TransferForm({ initial }: { initial?: TransferDetails }) {
   const router = useRouter()
   const [serverError, setServerError] = useState<string | null>(null)
   const { data: accounts } = useAccounts()
   const transfer = useTransfer()
+  const updateTransfer = useUpdateTransfer()
+  const isEditing = !!initial
 
   const {
     register,
@@ -39,15 +45,27 @@ export function TransferForm() {
     formState: { errors, isSubmitting },
   } = useForm<FormInput, unknown, TransferInput>({
     resolver: zodResolver(transferSchema),
-    defaultValues: {
-      occurredAt: new Date().toISOString().slice(0, 10),
-    },
+    defaultValues: initial
+      ? {
+          originAccountId: initial.originAccountId,
+          destinationAccountId: initial.destinationAccountId,
+          amount: initial.amount,
+          description: initial.description ?? undefined,
+          occurredAt: initial.occurredAt.slice(0, 10),
+        }
+      : {
+          occurredAt: new Date().toISOString().slice(0, 10),
+        },
   })
 
   async function onSubmit(values: TransferInput) {
     setServerError(null)
     try {
-      await transfer.mutateAsync(values)
+      if (initial) {
+        await updateTransfer.mutateAsync({ ...values, id: initial.transferId })
+      } else {
+        await transfer.mutateAsync(values)
+      }
       router.replace("/")
       router.refresh()
     } catch (error) {
@@ -175,7 +193,11 @@ export function TransferForm() {
       {serverError && <p className="text-destructive text-sm">{serverError}</p>}
 
       <Button type="submit" disabled={isSubmitting} className="w-full">
-        {isSubmitting ? "Transferindo..." : "Transferir"}
+        {isSubmitting
+          ? "Salvando..."
+          : isEditing
+            ? "Salvar alterações"
+            : "Transferir"}
       </Button>
     </form>
   )

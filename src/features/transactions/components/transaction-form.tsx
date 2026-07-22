@@ -23,24 +23,42 @@ import { useAccounts } from "@/features/accounts/hooks/use-accounts"
 import {
   useCategories,
   useCreateTransaction,
+  useUpdateTransaction,
 } from "@/features/transactions/hooks/use-transactions"
 import {
   createTransactionSchema,
   type CreateTransactionInput,
+  type TransactionType,
 } from "@/features/transactions/domain/schemas"
 
 type FormInput = z.input<typeof createTransactionSchema>
 
+type InitialTransaction = {
+  id: string
+  accountId: string
+  categoryId: string
+  type: TransactionType
+  amount: number
+  currency: Currency
+  description?: string | null
+  occurredAt: string
+}
+
 export function TransactionForm({
   defaultAccountId,
+  initial,
 }: {
   defaultAccountId?: string
+  /** Presente = modo edição de um lançamento existente (despesa/receita). */
+  initial?: InitialTransaction
 }) {
   const router = useRouter()
   const [serverError, setServerError] = useState<string | null>(null)
   const { data: accounts } = useAccounts()
   const { data: categories } = useCategories()
   const createTransaction = useCreateTransaction()
+  const updateTransaction = useUpdateTransaction()
+  const isEditing = !!initial
 
   const {
     register,
@@ -49,12 +67,22 @@ export function TransactionForm({
     formState: { errors, isSubmitting },
   } = useForm<FormInput, unknown, CreateTransactionInput>({
     resolver: zodResolver(createTransactionSchema),
-    defaultValues: {
-      type: "despesa",
-      accountId: defaultAccountId,
-      currency: "BRL",
-      occurredAt: new Date().toISOString().slice(0, 10),
-    },
+    defaultValues: initial
+      ? {
+          type: initial.type,
+          accountId: initial.accountId,
+          categoryId: initial.categoryId,
+          amount: Math.abs(initial.amount),
+          currency: initial.currency,
+          description: initial.description ?? undefined,
+          occurredAt: initial.occurredAt.slice(0, 10),
+        }
+      : {
+          type: "despesa",
+          accountId: defaultAccountId,
+          currency: "BRL",
+          occurredAt: new Date().toISOString().slice(0, 10),
+        },
   })
 
   const type = useWatch({ control, name: "type" })
@@ -64,20 +92,27 @@ export function TransactionForm({
 
   async function onSubmit(values: CreateTransactionInput) {
     setServerError(null)
+    const currency =
+      (selectedAccount?.currency as Currency | undefined) ?? values.currency
     try {
-      await createTransaction.mutateAsync({
-        ...values,
-        currency:
-          (selectedAccount?.currency as Currency | undefined) ??
-          values.currency,
-      })
-      router.replace(defaultAccountId ? `/contas/${defaultAccountId}` : "/")
+      if (initial) {
+        await updateTransaction.mutateAsync({
+          ...values,
+          id: initial.id,
+          currency,
+        })
+      } else {
+        await createTransaction.mutateAsync({ ...values, currency })
+      }
+      router.replace(
+        `/contas/${values.accountId ?? defaultAccountId ?? initial?.accountId}`
+      )
       router.refresh()
     } catch (error) {
       setServerError(
         error instanceof Error
           ? error.message
-          : "Não foi possível registrar o lançamento. Tente novamente."
+          : "Não foi possível salvar o lançamento. Tente novamente."
       )
     }
   }
@@ -209,7 +244,11 @@ export function TransactionForm({
       {serverError && <p className="text-destructive text-sm">{serverError}</p>}
 
       <Button type="submit" disabled={isSubmitting} className="w-full">
-        {isSubmitting ? "Salvando..." : "Salvar lançamento"}
+        {isSubmitting
+          ? "Salvando..."
+          : isEditing
+            ? "Salvar alterações"
+            : "Salvar lançamento"}
       </Button>
     </form>
   )
