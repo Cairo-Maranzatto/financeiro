@@ -820,6 +820,17 @@ export type Database = {
         }
         Returns: string
       }
+      atualizar_transferencia: {
+        Args: {
+          p_amount: number
+          p_description?: string
+          p_destination_account_id: string
+          p_occurred_at?: string
+          p_origin_account_id: string
+          p_transfer_id: string
+        }
+        Returns: string
+      }
       close_due_invoices: { Args: never; Returns: number }
       create_account_with_initial_balance: {
         Args: {

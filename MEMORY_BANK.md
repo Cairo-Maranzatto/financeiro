@@ -39,6 +39,13 @@ _(Atualizado em: 2026-07-21)_
 
 _(Mais recente no topo. Uma entrada por sessão/marco relevante.)_
 
+### 2026-07-21 — Correção de falha de deploy na Vercel (TypeScript RPC)
+
+1. **Falha reproduzida pelo log do deploy:** `next build` quebrou no typecheck em `src/app/api/transactions/transfer/route.ts` com erro de união de nomes de RPC (`"atualizar_transferencia"` não atribuível ao tipo esperado de `supabase.rpc`).
+2. **Causa raiz:** `src/shared/supabase/database.types.ts` estava desatualizado em relação ao schema já migrado em produção — a migration `20260709120000_transactions_edit_transfer.sql` criou a RPC `atualizar_transferencia`, mas a assinatura não existia no tipo `Database["public"]["Functions"]` commitado no repositório.
+3. **Correção aplicada:** adicionada a entrada tipada de `atualizar_transferencia` (Args + Returns) em `database.types.ts`, mantendo o contrato da função SQL (incluindo `p_transfer_id`, contas de origem/destino, valor, descrição e data).
+4. **Validação local pós-fix:** `pnpm run build` executado com sucesso (compilação + TypeScript + geração de 29 rotas), confirmando eliminação do erro que quebrava o deploy.
+
 ### 2026-07-21 — Sincronização de migration pendente no Supabase (produção)
 
 1. **Diagnóstico de drift de migrations:** `pnpm exec supabase migration list` mostrou 1 migration local sem correspondente remoto: `20260709120000_transactions_edit_transfer.sql`.
