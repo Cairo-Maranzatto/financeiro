@@ -6,18 +6,19 @@
 
 1. **No início de toda sessão de trabalho relevante:** leia "Contexto Atual" e as últimas 2-3 entradas de "Linha do Tempo de Progresso" antes de decidir o que fazer.
 2. **No final de toda sessão de trabalho relevante:** atualize "Contexto Atual" e adicione uma nova entrada em "Linha do Tempo de Progresso".
-3. **Sempre que uma decisão arquitetural ou de produto for tomada (ou revista) durante a implementação:** adicione uma entrada em "Log de Decisões" — nunca apague uma decisão antiga, registre a mudança como uma nova entrada que referencia a anterior.
-4. **Sempre que um bug não-óbvio, uma limitação ou uma dívida técnica for descoberta:** registre em "Problemas Conhecidos e Dívida Técnica" — isso evita redescobrir o mesmo problema duas vezes.
-5. Convenção de ordenação: cada seção cronológica tem as entradas **mais recentes no topo**.
-6. Este arquivo cresce com o projeto. Não reescreva o histórico — apenas adicione. Se uma seção ficar muito longa, mova entradas antigas para `fases/historico/` mantendo aqui apenas um resumo + link.
+3. **Antes de concluir qualquer entrega com alteração de código:** execute `pnpm build` localmente (além de typecheck/testes quando aplicável) para reduzir risco de quebra no deploy.
+4. **Sempre que uma decisão arquitetural ou de produto for tomada (ou revista) durante a implementação:** adicione uma entrada em "Log de Decisões" — nunca apague uma decisão antiga, registre a mudança como uma nova entrada que referencia a anterior.
+5. **Sempre que um bug não-óbvio, uma limitação ou uma dívida técnica for descoberta:** registre em "Problemas Conhecidos e Dívida Técnica" — isso evita redescobrir o mesmo problema duas vezes.
+6. Convenção de ordenação: cada seção cronológica tem as entradas **mais recentes no topo**.
+7. Este arquivo cresce com o projeto. Não reescreva o histórico — apenas adicione. Se uma seção ficar muito longa, mova entradas antigas para `fases/historico/` mantendo aqui apenas um resumo + link.
 
 ---
 
 ## Contexto Atual
 
-_(Atualizado em: 2026-07-21)_
+_(Atualizado em: 2026-07-23)_
 
-- **Fase do projeto:** 🟢 **MVP em produção + Aprimoramento de Categorias implementado (código e banco).** Fases 0–6 do MVP e Fases A0–A6 do aprimoramento (`fases/aprimoramento/INDICE.md`) concluídas. Banco de produção já migrado (6 migrations do aprimoramento aplicadas, incluindo `20260709120000`). **Pendente:** commit/push do código para o GitHub (não feito automaticamente — protocolo do agente) e checklist manual/E2E em navegador real (sem credenciais/browser automation nesta sessão).
+- **Fase do projeto:** 🟢 **MVP em produção + Aprimoramento de Categorias implementado + início do aprimoramento de Lançamentos Futuros (Previsto x Realizado).** Fases 0–6 do MVP e Fases A0–A6 do aprimoramento de categorias concluídas. **Novo marco:** Fase L1 iniciada no código (migration + API), ainda pendente de aplicação em produção e deploy na Vercel.
 - **URL de produção:** https://financeiro-virid-phi.vercel.app/ — ainda roda o código de ANTES desta sessão até o deploy ser feito (push para `master` + Vercel redeploy automático).
 - **Estado do repositório:** todas as mudanças desta sessão estão no working tree, **não commitadas** (ver `git status`). Banco de produção (Supabase) já está à frente do código deployado na Vercel — normal até o próximo deploy, mas evitar rodar migrations novas sem antes conferir esse estado se retomar o trabalho em outra sessão.
 - **Infraestrutura ativa:**
@@ -25,6 +26,8 @@ _(Atualizado em: 2026-07-21)_
   - Vercel — Next.js 16.2.9, cron jobs ativos (`close-invoices` 03h UTC, `generate-recurrences` 04h UTC).
   - GitHub Actions CI — lint → typecheck → vitest → build em cada push/PR.
 - **Pendências abertas (não bloqueiam uso):**
+  - Aplicar migration `20260723102000_future_transactions_l1_status_filters.sql` no Supabase (produção) após checklist manual final; ela altera RPCs de saldo/dashboard/orçamento para considerar apenas `status = 'Pago'`.
+  - Continuar fases L2-L4 do plano `fases/aprimoramento/lancamentos/PLANEJAMENTO_PREVISTO_REALIZADO.md` (visual de pendentes, efetivação rápida, projeção, recorrências antecipadas).
   - Trocar senha do banco Supabase (Project Settings → Database → Reset password) — senha `Senha984746@` foi exposta no histórico do chat.
   - Configurar DSN do Sentry (opcional — app funciona sem; erros ficam invisíveis sem ele).
   - Criar conta de teste isolada para rodar os testes E2E Playwright em CI (`TEST_EMAIL`/`TEST_PASSWORD`).
@@ -38,6 +41,26 @@ _(Atualizado em: 2026-07-21)_
 ## Linha do Tempo de Progresso
 
 _(Mais recente no topo. Uma entrada por sessão/marco relevante.)_
+
+### 2026-07-23 — Execução da Fase L1 (core de status) iniciada
+
+1. **Diagnóstico de dados antes de alterar regra de status:** consultas de auditoria em produção retornaram cenário limpo para migração incremental: 0 transações futuras com `status = 'Pago'`, 0 regras de recorrência ativas, e nenhum delta entre saldo somando todos os status vs saldo só `Pago` no momento da coleta.
+2. **Decisões de produto confirmadas com o usuário para esta etapa:** (a) transferência futura permanece com comportamento atual (`Pago`), sem entrar na mudança de regra agora; (b) campo manual "Foi pago?" não entra na L1 (fica para fase posterior), mantendo regra automática por data neste primeiro corte.
+3. **Migration criada:** `supabase/migrations/20260723102000_future_transactions_l1_status_filters.sql` com `CREATE OR REPLACE` das funções `get_balances_by_currency`, `get_category_expenses_by_parent`, `get_month_expenses_total`, `get_month_income_total` e `get_budgets_with_usage`, adicionando filtro `status = 'Pago'` nas agregações de realizado.
+4. **API de transações ajustada:** `src/features/transactions/api/transactions.ts` agora resolve status automaticamente por data informada (`occurredAt`): futuro => `Pendente` e `paid_at = null`; hoje/passado => `Pago` e `paid_at = occurred_at`. A mesma regra foi aplicada em `createTransaction` e `updateTransaction`.
+5. **Validação local pós-ajustes:** `pnpm typecheck` e `pnpm test --run` concluídos com sucesso (34/34 testes Vitest passando).
+6. **Rollback explícito criado para a migration da L1:** `supabase/rollbacks/20260723102000_future_transactions_l1_status_filters.rollback.sql` com restauração das versões anteriores das 5 funções alteradas (`get_balances_by_currency`, `get_category_expenses_by_parent`, `get_month_expenses_total`, `get_month_income_total`, `get_budgets_with_usage`).
+7. **Regra operacional formalizada:** manter sempre `pnpm build` como checagem obrigatória antes de concluir entregas com alteração de código (registrado também em `AGENTS.md`).
+8. **Migration aplicada em produção com segurança:** `pnpm exec supabase db push --dry-run` confirmou somente `20260723102000_future_transactions_l1_status_filters.sql`; em seguida `pnpm exec supabase db push` aplicou a migration com sucesso. `pnpm exec supabase migration list` confirmou alinhamento total Local = Remote (incluindo `20260723102000`). O warning de cache de catálogo envolvendo Docker reapareceu, mas não bloqueou o push (mesmo padrão já observado em sessões anteriores).
+
+### 2026-07-23 — Planejamento: Funcionalidade Previsto x Realizado
+
+1. **Análise do Estado Atual:** Identificado que funções de saldo e agregações somavam todos os lançamentos ignorando o campo `status`. Além disso, a inserção padrão via API era sempre `Pago` e o cron de recorrências só materializava as transações no dia exato do vencimento, o que inviabilizava a projeção de fluxo de caixa futuro.
+2. **Plano de Arquitetura Elaborado:** Criado o documento estratégico `fases/aprimoramento/lancamentos/PLANEJAMENTO_PREVISTO_REALIZADO.md` abordando:
+   - _Fase L1:_ Alterações em DB e API para separar Saldo Atual (Pago) de Lançamentos Futuros (Pendente).
+   - _Fase L2:_ UI no extrato para exibir e efetivar lançamentos pendentes com um clique.
+   - _Fase L3:_ Atualização nos Orçamentos e Dashboard para mostrar os valores Comprometidos vs Pagos em gráfico e métricas.
+   - _Fase L4:_ Alteração no Cron para gerar as recorrências antecipadamente (ex: com 30-45 dias) já como `Pendente`, além de incluir projeção de faturas de cartão abertas.
 
 ### 2026-07-21 — Correção de falha de deploy na Vercel (TypeScript RPC)
 

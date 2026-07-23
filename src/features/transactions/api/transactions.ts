@@ -9,6 +9,40 @@ import type {
 export type Transaction = Database["public"]["Tables"]["transactions"]["Row"]
 export type TransactionWithFlags = Transaction & { is_internal: boolean }
 
+type TransactionLifecycleFields = {
+  occurredAtIso: string
+  status: "Pendente" | "Pago"
+  paidAt: string | null
+}
+
+function resolveTransactionLifecycleFields(
+  occurredAtInput: string
+): TransactionLifecycleFields {
+  const occurredAtDate = new Date(occurredAtInput)
+  const occurredAtIso = occurredAtDate.toISOString()
+
+  const occurredDate = occurredAtInput.slice(0, 10)
+  const today = new Date()
+  const todayDate = `${today.getFullYear()}-${String(
+    today.getMonth() + 1
+  ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`
+  const isFuture = occurredDate > todayDate
+
+  if (isFuture) {
+    return {
+      occurredAtIso,
+      status: "Pendente",
+      paidAt: null,
+    }
+  }
+
+  return {
+    occurredAtIso,
+    status: "Pago",
+    paidAt: occurredAtIso,
+  }
+}
+
 export async function fetchTransactions(
   supabase: SupabaseClient<Database>,
   accountId?: string
@@ -52,7 +86,7 @@ export async function createTransaction(
 ) {
   const signedAmount =
     input.type === "despesa" ? -Math.abs(input.amount) : Math.abs(input.amount)
-  const occurredAt = new Date(input.occurredAt).toISOString()
+  const lifecycle = resolveTransactionLifecycleFields(input.occurredAt)
 
   const { data, error } = await supabase
     .from("transactions")
@@ -60,12 +94,12 @@ export async function createTransaction(
       account_id: input.accountId,
       category_id: input.categoryId,
       type: input.type,
-      status: "Pago",
+      status: lifecycle.status,
       amount: signedAmount,
       currency: input.currency,
       description: input.description ?? null,
-      occurred_at: occurredAt,
-      paid_at: occurredAt,
+      occurred_at: lifecycle.occurredAtIso,
+      paid_at: lifecycle.paidAt,
     })
     .select()
     .single()
@@ -80,7 +114,7 @@ export async function updateTransaction(
 ) {
   const signedAmount =
     input.type === "despesa" ? -Math.abs(input.amount) : Math.abs(input.amount)
-  const occurredAt = new Date(input.occurredAt).toISOString()
+  const lifecycle = resolveTransactionLifecycleFields(input.occurredAt)
 
   const { data, error } = await supabase
     .from("transactions")
@@ -88,11 +122,12 @@ export async function updateTransaction(
       account_id: input.accountId,
       category_id: input.categoryId,
       type: input.type,
+      status: lifecycle.status,
       amount: signedAmount,
       currency: input.currency,
       description: input.description ?? null,
-      occurred_at: occurredAt,
-      paid_at: occurredAt,
+      occurred_at: lifecycle.occurredAtIso,
+      paid_at: lifecycle.paidAt,
     })
     .eq("id", input.id)
     .select()

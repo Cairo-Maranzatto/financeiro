@@ -8,6 +8,7 @@
 2. Abra [fases/INDICE.md](fases/INDICE.md) para o histórico do MVP (concluído), e [fases/aprimoramento/INDICE.md](fases/aprimoramento/INDICE.md) para o trabalho em andamento (taxonomia de categorias).
 3. Em caso de dúvida sobre uma regra de negócio, consulte primeiro a seção correspondente em [PLANEJAMENTO_SISTEMA_FINANCEIRO.md](PLANEJAMENTO_SISTEMA_FINANCEIRO.md) (MVP) ou [fases/CATEGORIAS_REFERENCIA.md](fases/CATEGORIAS_REFERENCIA.md) (taxonomia de categorias) antes de decidir por conta própria.
 4. Ao concluir qualquer trabalho relevante (decisão, marco, bug crítico resolvido), registre em [MEMORY_BANK.md](MEMORY_BANK.md).
+5. Antes de concluir qualquer entrega com alteração de código, execute `pnpm build` localmente para reduzir risco de quebra no deploy (além de typecheck/testes quando aplicável).
 
 ## Mapa de Documentação
 
