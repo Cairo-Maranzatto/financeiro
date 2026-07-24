@@ -6,9 +6,12 @@ import { cn } from "@/shared/lib/utils"
 import { buttonVariants } from "@/shared/ui/button"
 import { useDashboardSummary } from "@/features/dashboard/hooks/use-dashboard"
 import { BalanceCard } from "@/features/dashboard/components/balance-card"
-import { CategoryBars } from "@/features/dashboard/components/category-bars"
 import { RecentTransactions } from "@/features/dashboard/components/recent-transactions"
 import { FinancialIndicators } from "@/features/dashboard/components/financial-indicators"
+import { DashboardKpis } from "@/features/dashboard/components/dashboard-kpis"
+import { CashflowTrendChart } from "@/features/dashboard/components/cashflow-trend-chart"
+import { CategoryDrilldownChart } from "@/features/dashboard/components/category-drilldown-chart"
+import { DashboardAlerts } from "@/features/dashboard/components/dashboard-alerts"
 
 function formatDateStr(
   dateStr: string,
@@ -45,12 +48,6 @@ function Skeleton({ className }: { className?: string }) {
 
 export function DashboardView() {
   const { data, isLoading, error } = useDashboardSummary()
-
-  const monthFmt = (v: number) =>
-    new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    }).format(v)
 
   return (
     <div className="flex flex-col gap-8">
@@ -98,10 +95,10 @@ export function DashboardView() {
         )}
       </section>
 
-      {/* Gastos do mês */}
-      <section className="flex flex-col gap-2">
+      {/* KPI e período */}
+      <section className="flex flex-col gap-3">
         <div className="flex items-baseline justify-between gap-2">
-          <SectionTitle>Gastos do mês</SectionTitle>
+          <SectionTitle>Resumo financeiro</SectionTitle>
           {data && (
             <span className="text-muted-foreground text-xs">
               {buildPeriodLabel(data.periodStart, data.periodEnd)}
@@ -109,23 +106,36 @@ export function DashboardView() {
           )}
         </div>
         {isLoading ? (
-          <Skeleton className="h-9 w-44" />
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <Skeleton className="h-28" />
+            <Skeleton className="h-28" />
+            <Skeleton className="h-28" />
+            <Skeleton className="h-28" />
+          </div>
         ) : (
-          <p className="text-3xl font-bold">
-            {monthFmt(data?.monthExpenses ?? 0)}
-          </p>
+          data && <DashboardKpis summary={data} />
         )}
       </section>
 
-      {/* Top categorias */}
-      {!isLoading && (data?.topCategories.length ?? 0) > 0 && (
-        <section className="flex flex-col gap-3">
-          <SectionTitle>Por categoria</SectionTitle>
-          <CategoryBars categories={data!.topCategories} />
-        </section>
-      )}
+      {/* Núcleo analítico */}
+      <section className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+        <div className="xl:col-span-2">
+          {isLoading ? (
+            <Skeleton className="h-80" />
+          ) : (
+            <CashflowTrendChart data={data?.cashflowTrend ?? []} />
+          )}
+        </div>
+        <div>
+          {isLoading ? (
+            <Skeleton className="h-80" />
+          ) : (
+            <CategoryDrilldownChart data={data?.categoryDrilldown ?? []} />
+          )}
+        </div>
+      </section>
 
-      {/* Indicadores financeiros */}
+      {/* Indicadores financeiros clássicos */}
       {!isLoading && data && (
         <section className="flex flex-col gap-3">
           <SectionTitle>Indicadores</SectionTitle>
@@ -133,23 +143,34 @@ export function DashboardView() {
         </section>
       )}
 
-      {/* Últimas transações */}
-      <section className="flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <SectionTitle>Últimas transações</SectionTitle>
-          <Link href="/contas" className="text-primary text-xs hover:underline">
-            Ver contas
-          </Link>
+      <section className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <div>
+          {isLoading ? (
+            <Skeleton className="h-64" />
+          ) : (
+            <DashboardAlerts alerts={data?.alerts ?? []} />
+          )}
         </div>
-        {isLoading ? (
-          <div className="flex flex-col gap-3">
-            <Skeleton className="h-12" />
-            <Skeleton className="h-12" />
-            <Skeleton className="h-12" />
+        <div className="rounded-xl border p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <SectionTitle>Últimas transações</SectionTitle>
+            <Link
+              href="/contas"
+              className="text-primary text-xs hover:underline"
+            >
+              Ver contas
+            </Link>
           </div>
-        ) : (
-          <RecentTransactions transactions={data?.recentTransactions ?? []} />
-        )}
+          {isLoading ? (
+            <div className="flex flex-col gap-3">
+              <Skeleton className="h-12" />
+              <Skeleton className="h-12" />
+              <Skeleton className="h-12" />
+            </div>
+          ) : (
+            <RecentTransactions transactions={data?.recentTransactions ?? []} />
+          )}
+        </div>
       </section>
 
       {error && (

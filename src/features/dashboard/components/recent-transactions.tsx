@@ -36,13 +36,17 @@ export function RecentTransactions({ transactions }: Props) {
         return (
           <li
             key={tx.id}
-            className="flex items-center justify-between gap-4 py-3"
+            className={cn(
+              "flex items-center justify-between gap-4 py-3",
+              tx.status === "Pendente" && "opacity-70"
+            )}
           >
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium">{label}</p>
               <p className="text-muted-foreground text-xs">
                 {sub ? `${sub} · ` : ""}
                 {date}
+                {tx.status === "Pendente" ? " · Pendente" : ""}
               </p>
             </div>
             <span
