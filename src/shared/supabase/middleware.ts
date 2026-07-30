@@ -11,6 +11,7 @@ const PUBLIC_ROUTES = [
   ...AUTH_ONLY_ROUTES,
   "/atualizar-senha",
   "/auth/callback",
+  "/api/webhooks/whatsapp",
 ]
 
 export async function updateSession(request: NextRequest) {
