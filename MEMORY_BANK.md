@@ -16,9 +16,9 @@
 
 ## Contexto Atual
 
-_(Atualizado em: 2026-07-23)_
+_(Atualizado em: 2026-07-30)_
 
-- **Fase do projeto:** 🟢 **MVP em produção + Aprimoramento de Categorias implementado + início do aprimoramento de Lançamentos Futuros (Previsto x Realizado).** Fases 0–6 do MVP e Fases A0–A6 do aprimoramento de categorias concluídas. **Novo marco:** Fase L1 iniciada no código (migration + API), ainda pendente de aplicação em produção e deploy na Vercel.
+- **Fase do projeto:** 🟢 **MVP em produção + Aprimoramentos em andamento (Lançamentos Futuros e LLM).** Fases 0–6 do MVP e Fases A0–A6 do aprimoramento de categorias concluídas. **Novo marco:** Fases LLM 1-4 concluídas no código (backend chat, UI web, tools de escrita e entrada via WhatsApp/Meta Cloud API), pendentes de commit/deploy e aplicação da migration nova em produção.
 - **URL de produção:** https://financeiro-virid-phi.vercel.app/ — ainda roda o código de ANTES desta sessão até o deploy ser feito (push para `master` + Vercel redeploy automático).
 - **Estado do repositório:** todas as mudanças desta sessão estão no working tree, **não commitadas** (ver `git status`). Banco de produção (Supabase) já está à frente do código deployado na Vercel — normal até o próximo deploy, mas evitar rodar migrations novas sem antes conferir esse estado se retomar o trabalho em outra sessão.
 - **Infraestrutura ativa:**
@@ -41,6 +41,85 @@ _(Atualizado em: 2026-07-23)_
 ## Linha do Tempo de Progresso
 
 _(Mais recente no topo. Uma entrada por sessão/marco relevante.)_
+
+### 2026-07-29 — Execução iniciada: Fase LLM 3 (Tools de Escrita) concluída + decisão WhatsApp
+
+### 2026-07-30 — Execução: Fase LLM 4 (WhatsApp via Meta Cloud API) concluída
+
+1. **Migration da Fase 4 criada:** `supabase/migrations/20260729214000_whatsapp_links_and_service_invoice_payment.sql` com:
+   - tabela `whatsapp_links` (`id` UUIDv7, `user_id`, `phone_number`, colunas de auditoria e soft delete);
+   - RLS/policies para o usuário autenticado gerenciar apenas seu próprio vínculo;
+   - índices únicos parciais para garantir apenas 1 número ativo por usuário e 1 usuário ativo por número;
+   - função `pagar_fatura_por_usuario(...)` para execução segura via `service_role` no canal WhatsApp.
+2. **Infra de service-role adicionada:** `src/shared/supabase/admin.ts` para criar cliente admin sem sessão persistida, usado apenas no backend/server.
+3. **Agente WhatsApp implementado:** `src/features/llm/server/whatsapp-agent.ts` com `generateText` (Gemini) + tools de leitura/escrita (`getAccountBalances`, `getRecentTransactions`, `createTransactionTool`, `createCategoryTool`, `payInvoiceTool`) filtradas por `user_id` do vínculo telefônico.
+4. **Webhook Meta Cloud API implementado:** `src/app/api/webhooks/whatsapp/route.ts` com:
+   - `GET` para verificação `hub.verify_token`;
+   - `POST` com validação opcional de assinatura `x-hub-signature-256` via `WHATSAPP_APP_SECRET`;
+   - fluxo de número desconhecido com link de onboarding;
+   - envio de resposta para a Graph API (`WHATSAPP_ACCESS_TOKEN` + `WHATSAPP_PHONE_NUMBER_ID`).
+5. **Fluxo de vínculo no app implementado:**
+   - API autenticada `src/app/api/whatsapp/link/route.ts` (`GET`/`POST`/`DELETE`);
+   - tela `src/app/(app)/configuracoes/whatsapp/page.tsx` + componente `src/features/identity/components/whatsapp-link-settings.tsx`;
+   - link de navegação "WhatsApp" em `src/shared/components/app-header.tsx`.
+6. **Validação técnica concluída:** `pnpm build` executado com sucesso após ajustes de tipagem e renderização no Next.js 16 (CSR boundary removida de `page.tsx` via split server/client).
+7. **Variáveis de ambiente necessárias para operação da Fase 4:** `SUPABASE_SERVICE_ROLE_KEY`, `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID` e (recomendado) `WHATSAPP_APP_SECRET`.
+
+### 2026-07-29 — Execução iniciada: Fase LLM 3 (Tools de Escrita) concluída + decisão WhatsApp
+
+1. **Decisão formal de integração WhatsApp fechada no plano:** `Meta Cloud API` definida como provedor oficial, com atualização explícita em:
+   - `fases/aprimoramento/LLM/PLANEJAMENTO_RAG_AGENT.md`
+   - `fases/aprimoramento/LLM/FASE_LLM_04_WHATSAPP.md`
+     (`Evolution API` mantida apenas como fallback opcional, não padrão).
+2. **Rota de chat evoluída para escrita:** `src/app/api/chat/route.ts` recebeu as tools:
+   - `createTransactionTool` (reaproveitando `createTransactionSchema` + `createTransaction`)
+   - `createCategoryTool` (reaproveitando `createCategorySchema` + `createCategory`)
+   - `payInvoiceTool` (reaproveitando `payInvoiceSchema` + RPC `pagar_fatura`)
+3. **Contexto adicional para reduzir alucinação de IDs:** injeção de lista de faturas elegíveis no System Prompt (`id`, cartão, vencimento e status), além de reforço textual para uso de IDs existentes nas operações de escrita.
+4. **Observabilidade e tratamento de erro:** logs estruturados (`log info/error`) adicionados para sucesso e falha de cada nova tool de escrita.
+5. **Validação técnica concluída:** `pnpm build` executado com sucesso após os ajustes (compilação + typecheck + geração de rotas).
+
+### 2026-07-29 — Execução iniciada: Fase LLM 2 (UI Web) concluída
+
+1. **Dependência client-side adicionada para chat:** `@ai-sdk/react` instalada para suportar o hook `useChat` no frontend (a Fase LLM 1 já havia adicionado `ai` + `@ai-sdk/google` no backend).
+2. **Chat lateral implementado:** criado `src/features/llm/components/chat-sidebar.tsx` com painel lateral deslizante, overlay, histórico de mensagens, estado de carregamento, limpeza de conversa e envio de mensagens para `POST /api/chat`.
+3. **Botão flutuante implementado:** criado `src/features/llm/components/chat-fab.tsx` com FAB fixo no canto inferior direito para abrir/fechar o assistente.
+4. **Integração no layout autenticado:** `src/app/(app)/layout.tsx` atualizado para renderizar `<ChatFab />` em todas as telas protegidas do app.
+5. **Contexto de tela injetado na conversa:** o `pathname` atual é enviado no corpo da requisição do chat (`context.pathname`) para permitir respostas contextualizadas por página.
+6. **Compatibilidade com versão do AI SDK resolvida:** ajustes no client para API atual (`useChat` de `@ai-sdk/react` + `DefaultChatTransport` de `ai`) após detecção de mudanças em relação a exemplos antigos (`ai/react`).
+7. **Validação técnica concluída:** `pnpm build` executado com sucesso após os ajustes (compilação, typecheck e geração das rotas sem erros).
+
+### 2026-07-29 — Execução iniciada: Fase LLM 1 (Core Backend) concluída
+
+1. **Dependências de IA adicionadas ao projeto:** `ai` e `@ai-sdk/google` via `pnpm add`, mantendo aderência ao stack atual (Next.js Route Handlers + TypeScript estrito + Supabase).
+2. **Nova rota criada:** `src/app/api/chat/route.ts` (`POST /api/chat`) com autenticação obrigatória via `createClient()` + `supabase.auth.getUser()` (401 quando não autenticado).
+3. **System Prompt contextual dinâmico implementado:** injeta timezone, janela do mês financeiro resolvida por `resolveFinancialMonth()`, rota/tela atual, lista de categorias (`id|nome|tipo|escopo`) e contas (`id|nome|moeda`) do usuário para reduzir ambiguidade e alucinação de IDs.
+4. **Tools de leitura com RLS implementadas no `streamText`:**
+   - `getAccountBalances` (RPC `get_balances_by_currency`)
+   - `getRecentTransactions` (últimas transações não-transferência)
+   - `getBudgetsStatus` (RPC `get_budgets_with_usage` respeitando mês financeiro e timezone)
+5. **Compatibilidade de env para Gemini aplicada:** suporte a `GEMINI_API_KEY` com fallback para `GOOGLE_GENERATIVE_AI_API_KEY`.
+6. **Validação técnica concluída:** `pnpm build` executado com sucesso após ajuste de compatibilidade com AI SDK (`convertToModelMessages` assíncrono e remoção de `maxSteps` não suportado na versão instalada).
+
+### 2026-07-29 — Criação das Fases Detalhadas do Aprimoramento LLM
+
+1. **Detalhamento das Fases:** O planejamento de alto nível (`PLANEJAMENTO_RAG_AGENT.md`) foi quebrado em arquivos estruturados de passo a passo operacionais (guias de implementação para o Agente) na pasta `fases/aprimoramento/LLM/`:
+   - `INDICE.md`: Mapeamento das 5 fases.
+   - `FASE_LLM_01_CORE_BACKEND.md`: Foco na rota `/api/chat`, inicialização do SDK da Vercel + Gemini e Tools de leitura.
+   - `FASE_LLM_02_UI_WEB.md`: Criação do Sheet lateral e Botão FAB no Next.js App Router para o usuário interagir.
+   - `FASE_LLM_03_TOOLS_ESCRITA.md`: Implementação de function calling para manipulação de banco (Criação de Transação e Categoria) respeitando RLS.
+   - `FASE_LLM_04_WHATSAPP.md`: Tabela `whatsapp_links` (RLS isolado) e webhook via provedor externo com identificação.
+   - `FASE_LLM_05_RAG_SQL.md`: Solução analítica baseada em RPC com execução restrita (apenas SELECT + SECURITY INVOKER) para relatórios dinâmicos.
+2. Todo o planejamento está pronto para execução a partir da Fase 1 quando autorizado.
+
+### 2026-07-29 — Planejamento: Assistente Virtual com IA (LLM / RAG / Tool Calling)
+
+1. **Análise do Estado Atual:** Revisados os documentos de arquitetura, stack (Next.js, Supabase, pnpm) e fases concluídas (MVP + Categorias) para adequar uma integração de IA respeitando a arquitetura existente.
+2. **Arquitetura Definida:** Decidido pelo uso de uma abordagem baseada em _Agentic Workflow com Function Calling_ (Tools) em vez de _Text-to-SQL_ puramente escrito. Essa abordagem é muito mais segura para um sistema transacional que tem regras de negócio (RLS, Triggers, RPCs), permitindo que a IA invoque funções internas para leitura e escrita, imitando fielmente a interface do usuário.
+3. **Plano Elaborado:** Criado o arquivo `fases/aprimoramento/LLM/PLANEJAMENTO_RAG_AGENT.md` detalhando as integrações:
+   - Uso da **Gemini API** (tier gratuito).
+   - Pontos de Entrada: Web App (Floating Action Button + Painel Lateral) e WhatsApp (via Webhook + Provedor).
+   - Divisão em 5 Fases: Infraestrutura do Agente, UI no Web App, Tools de Mutação (Escrita), Ponto de entrada do WhatsApp e RAG Analítico restrito.
 
 ### 2026-07-23 — Execução da Fase L1 (core de status) iniciada
 

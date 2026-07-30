@@ -32,6 +32,12 @@ export function AppHeader() {
           <Link href="/categorias" className="hover:text-foreground">
             Categorias
           </Link>
+          <Link
+            href="/configuracoes/whatsapp"
+            className="hover:text-foreground"
+          >
+            WhatsApp
+          </Link>
         </nav>
       </div>
       <div className="flex items-center gap-3">
