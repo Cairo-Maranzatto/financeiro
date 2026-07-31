@@ -1,5 +1,5 @@
-import Link from "next/link"
-
+// AÇÃO TEMPORÁRIA: cadastro e recuperação de senha desativados.
+// Reative os links abaixo quando o produto estiver aberto ao público.
 import {
   Card,
   CardContent,
@@ -18,23 +18,6 @@ export default function LoginPage() {
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <LoginForm />
-        <p className="text-muted-foreground text-center text-sm">
-          Não tem uma conta?{" "}
-          <Link
-            href="/cadastro"
-            className="text-foreground font-medium underline-offset-4 hover:underline"
-          >
-            Cadastre-se
-          </Link>
-        </p>
-        <p className="text-muted-foreground text-center text-sm">
-          <Link
-            href="/recuperar-senha"
-            className="text-foreground font-medium underline-offset-4 hover:underline"
-          >
-            Esqueci minha senha
-          </Link>
-        </p>
       </CardContent>
     </Card>
   )
