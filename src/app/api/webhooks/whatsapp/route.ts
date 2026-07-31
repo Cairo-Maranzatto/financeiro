@@ -111,10 +111,17 @@ async function sendWhatsappTextMessage(payload: {
     }
   )
 
+  const responseText = await response.text()
+
   if (!response.ok) {
-    const body = await response.text()
-    throw new Error(`Meta API error ${response.status}: ${body}`)
+    throw new Error(`Meta API error ${response.status}: ${responseText}`)
   }
+
+  log("info", "webhook.whatsapp.meta_message_sent", {
+    to: payload.to,
+    phoneNumberId,
+    response: responseText,
+  })
 }
 
 export async function GET(request: NextRequest) {
