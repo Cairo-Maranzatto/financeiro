@@ -16,16 +16,17 @@
 
 ## Contexto Atual
 
-_(Atualizado em: 2026-07-30)_
+_(Atualizado em: 2026-07-31)_
 
-- **Fase do projeto:** 🟢 **MVP em produção + Aprimoramentos em andamento (Lançamentos Futuros e LLM).** Fases 0–6 do MVP e Fases A0–A6 do aprimoramento de categorias concluídas. **Novo marco:** Fases LLM 1-4 concluídas no código (backend chat, UI web, tools de escrita e entrada via WhatsApp/Meta Cloud API), pendentes de commit/deploy e aplicação da migration nova em produção.
-- **URL de produção:** https://financeiro-virid-phi.vercel.app/ — ainda roda o código de ANTES desta sessão até o deploy ser feito (push para `master` + Vercel redeploy automático).
-- **Estado do repositório:** todas as mudanças desta sessão estão no working tree, **não commitadas** (ver `git status`). Banco de produção (Supabase) já está à frente do código deployado na Vercel — normal até o próximo deploy, mas evitar rodar migrations novas sem antes conferir esse estado se retomar o trabalho em outra sessão.
+- **Fase do projeto:** 🟢 **MVP em produção + Aprimoramentos em andamento (Lançamentos Futuros e LLM).** Fases 0–6 do MVP e Fases A0–A6 do aprimoramento de categorias concluídas. **Fases LLM 1-5 implementadas e deployadas:** backend chat, UI web, tools de escrita, entrada WhatsApp e RAG analítico seguro (queryDatabaseTool).
+- **URL de produção:** https://financeiro-virid-phi.vercel.app/ — código atual de `master` em deploy/redeploy contínuo.
+- **Estado do repositório:** alterações da sessão (Fase LLM 5 + ajustes no webhook) commitadas e enviadas para `master`.
 - **Infraestrutura ativa:**
   - Supabase cloud (project `xtyrsoeyreicinlvycwk`) — RLS ativo em todas as tabelas. 6 migrations do aprimoramento aplicadas (`20260708140000` a `20260709120000`).
   - Vercel — Next.js 16.2.9, cron jobs ativos (`close-invoices` 03h UTC, `generate-recurrences` 04h UTC).
   - GitHub Actions CI — lint → typecheck → vitest → build em cada push/PR.
 - **Pendências abertas (não bloqueiam uso):**
+  - Configurar `GEMINI_API_KEY` na Vercel — sem esse token, o chat e o WhatsApp não conseguem chamar o Gemini (retornam 500 na `POST /api/chat` e no webhook).
   - Aplicar migration `20260723102000_future_transactions_l1_status_filters.sql` no Supabase (produção) após checklist manual final; ela altera RPCs de saldo/dashboard/orçamento para considerar apenas `status = 'Pago'`.
   - Continuar fases L2-L4 do plano `fases/aprimoramento/lancamentos/PLANEJAMENTO_PREVISTO_REALIZADO.md` (visual de pendentes, efetivação rápida, projeção, recorrências antecipadas).
   - Trocar senha do banco Supabase (Project Settings → Database → Reset password) — senha `Senha984746@` foi exposta no histórico do chat.
@@ -42,7 +43,19 @@ _(Atualizado em: 2026-07-30)_
 
 _(Mais recente no topo. Uma entrada por sessão/marco relevante.)_
 
-### 2026-07-29 — Execução iniciada: Fase LLM 3 (Tools de Escrita) concluída + decisão WhatsApp
+### 2026-07-31 — Execução: Fase LLM 5 (RAG SQL) concluída + fechamento do ciclo WhatsApp
+
+1. **Fase LLM 5 implementada:**
+   - Migration `supabase/migrations/20260731010500_execute_readonly_sql.sql` criada e aplicada em produção.
+   - Função `execute_readonly_sql` com `SECURITY INVOKER`, validação de SELECT e bloqueio de comandos perigosos.
+   - Schema prompt `src/features/llm/server/db-schema-prompt.ts` com DDL das tabelas principais.
+   - Tool `queryDatabaseTool` adicionada em `src/app/api/chat/route.ts`.
+   - `database.types.ts` atualizado com a nova RPC.
+2. **Fase LLM 4 validada tecnicamente:**
+   - Webhook recebe mensagens, valida HMAC, envia resposta pela Meta Graph API e retorna `messages id`.
+   - Token `WHATSAPP_ACCESS_TOKEN` funciona, mas entrega real de mensagens ao celular fica pendente porque o número de teste `+1 (555) 197-0654` não entrega respostas — precisa de número real de WhatsApp Business para fechar o ciclo.
+3. **Validação técnica concluída:** `pnpm build` passou (33 rotas) e migration aplicada no Supabase.
+4. **Nova pendência crítica descoberta:** `GEMINI_API_KEY` ainda não configurado — sem ele, `POST /api/chat` e o webhook do WhatsApp não conseguem chamar a API do Google.
 
 ### 2026-07-30 — Execução: Fase LLM 4 (WhatsApp via Meta Cloud API) concluída
 
