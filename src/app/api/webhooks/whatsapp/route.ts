@@ -216,13 +216,23 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ ok: true, linked: true })
   } catch (error) {
-    const messageError =
-      error instanceof Error ? error.message : "Erro interno no webhook."
+    const safeError =
+      error instanceof Error
+        ? {
+            message: error.message,
+            stack: error.stack,
+            cause: error.cause,
+          }
+        : { raw: typeof error === "string" ? error : JSON.stringify(error) }
 
     log("error", "webhook.whatsapp.failed", {
-      error: messageError,
+      error: safeError,
       phone: fromPhone,
+      messagePreview: inboundText.slice(0, 100),
     })
+
+    const messageError =
+      error instanceof Error ? error.message : "Erro interno no webhook."
 
     return NextResponse.json({ error: messageError }, { status: 500 })
   }
