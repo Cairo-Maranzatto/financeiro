@@ -14,6 +14,7 @@ import {
   resolveFinancialMonth,
   toDateString,
 } from "@/shared/domain/financial-month"
+import { DB_SCHEMA_PROMPT } from "@/features/llm/server/db-schema-prompt"
 import { log } from "@/shared/lib/logger"
 import { toDateInTimezone } from "@/shared/lib/timezone"
 import { createClient } from "@/shared/supabase/server"
@@ -142,6 +143,7 @@ export async function POST(request: Request) {
     "Sempre priorize dados reais via tools em vez de suposições.",
     "Nunca invente IDs de conta ou categoria.",
     "Para operações de escrita, sempre use IDs existentes nas listas fornecidas.",
+    "Para análises complexas que as tools padrão não cobrem, use queryDatabaseTool. Ela aceita apenas SELECT e retorna JSON.",
     "Se uma informação não existir nos dados, diga explicitamente.",
     `Timezone do usuário: ${timezone}.`,
     `Mês financeiro atual: ${monthLabel} (${startStr} a ${endStr}, fim exclusivo).`,
@@ -152,6 +154,8 @@ export async function POST(request: Request) {
     accountsPrompt || "(sem contas)",
     "Faturas em aberto/fechadas/vencidas (id | cartão | vencimento | status):",
     invoicesPrompt || "(sem faturas elegíveis)",
+    "Schema do banco disponível para queryDatabaseTool:",
+    DB_SCHEMA_PROMPT,
   ].join("\n")
 
   const result = streamText({
@@ -330,6 +334,32 @@ export async function POST(request: Request) {
 
             throw new Error(message)
           }
+        },
+      }),
+      queryDatabaseTool: tool({
+        description:
+          "Executa uma query SELECT personalizada no banco quando as tools padrão não atendem. Use para análises ad-hoc, agrupamentos e perguntas complexas.",
+        inputSchema: z.object({
+          query: z
+            .string()
+            .describe(
+              "Query PostgreSQL em SQL. Deve ser apenas SELECT, começar com SELECT e respeitar RLS filtrando user_id e deleted_at IS NULL."
+            ),
+        }),
+        execute: async ({ query }) => {
+          const { data, error } = await supabase.rpc("execute_readonly_sql", {
+            p_query: query,
+          })
+
+          if (error) {
+            log("error", "llm.tool.queryDatabaseTool.failed", {
+              error: error.message,
+              userId: user.id,
+            })
+            throw new Error(error.message)
+          }
+
+          return data ?? []
         },
       }),
       payInvoiceTool: tool({

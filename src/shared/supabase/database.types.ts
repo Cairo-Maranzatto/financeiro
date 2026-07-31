@@ -865,6 +865,10 @@ export type Database = {
         }
         Returns: string
       }
+      execute_readonly_sql: {
+        Args: { p_query: string }
+        Returns: Json
+      }
       generate_recurrences: { Args: never; Returns: number }
       get_account_balance: { Args: { p_account_id: string }; Returns: number }
       get_balances_by_currency: {
