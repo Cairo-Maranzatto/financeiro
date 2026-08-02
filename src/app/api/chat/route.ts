@@ -343,12 +343,14 @@ export async function POST(request: Request) {
           })
 
           if (error) {
+            console.error("[queryDatabaseTool] query:", query)
+            console.error("[queryDatabaseTool] error:", error.message)
             log("error", "llm.tool.queryDatabaseTool.failed", {
               error: error.message,
               query,
               userId: user.id,
             })
-            throw new Error(error.message)
+            return `Erro na query: ${error.message}`
           }
 
           return data ?? []
