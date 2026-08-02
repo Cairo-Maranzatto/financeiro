@@ -104,6 +104,7 @@ export async function POST(request: Request) {
   )
 
   const categoriesPrompt = (categories ?? [])
+    .slice(0, 15)
     .map((item) => {
       const scope = item.parent_category_id
         ? "subcategoria"
@@ -115,10 +116,12 @@ export async function POST(request: Request) {
     .join("\n")
 
   const accountsPrompt = (accounts ?? [])
+    .slice(0, 15)
     .map((item) => `${item.id} | ${item.name} | ${item.currency}`)
     .join("\n")
 
   const invoicesPrompt = (openInvoices ?? [])
+    .slice(0, 15)
     .map(
       (item) =>
         `${item.id} | ${item.credit_cards?.name ?? "Cartão"} | venc: ${item.due_date} | status: ${item.status}`
@@ -129,13 +132,10 @@ export async function POST(request: Request) {
   const modelMessages = await convertToModelMessages(parsedMessages.data)
 
   const system = [
-    "Você é um assistente financeiro pessoal rigoroso e conciso.",
-    "Responda sempre em português do Brasil.",
-    "Sempre priorize dados reais via tools em vez de suposições.",
-    "Nunca invente IDs de conta ou categoria.",
-    "Para operações de escrita, sempre use IDs existentes nas listas fornecidas.",
-    "Para análises complexas que as tools padrão não cobrem, use queryDatabaseTool. Ela aceita apenas SELECT e retorna JSON.",
-    "Se uma informação não existir nos dados, diga explicitamente.",
+    "Assistente financeiro. Responda em português.",
+    "Use tools para dados reais. Não invente IDs.",
+    "Para análises ad-hoc, use queryDatabaseTool (apenas SELECT).",
+    "Se não souber, diga explicitamente.",
     `Timezone do usuário: ${timezone}.`,
     `Mês financeiro atual: ${monthLabel} (${startStr} a ${endStr}, fim exclusivo).`,
     `Tela atual da aplicação: ${currentPath}.`,
