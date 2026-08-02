@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.27",
+    "@ai-sdk/groq": "^4.0.19",
     "@ai-sdk/react": "^4.0.44",
     "@base-ui/react": "^1.6.0",
     "@hookform/resolvers": "^5.4.0",

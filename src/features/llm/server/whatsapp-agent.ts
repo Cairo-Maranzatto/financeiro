@@ -1,4 +1,4 @@
-import { google } from "@ai-sdk/google"
+import { getLlmModel } from "@/features/llm/server/llm-provider"
 import { generateText, tool } from "ai"
 import { z } from "zod"
 
@@ -23,21 +23,6 @@ function resolveCurrentFinancialMonth(timezone: string, startDay: number) {
     startStr: toDateString(start),
     endStr: toDateString(endExclusive),
     monthLabel: toDateString(start).slice(0, 7),
-  }
-}
-
-function ensureGeminiApiKey() {
-  if (
-    !process.env.GEMINI_API_KEY &&
-    !process.env.GOOGLE_GENERATIVE_AI_API_KEY
-  ) {
-    throw new Error(
-      "Missing API key. Configure GEMINI_API_KEY or GOOGLE_GENERATIVE_AI_API_KEY."
-    )
-  }
-
-  if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY && process.env.GEMINI_API_KEY) {
-    process.env.GOOGLE_GENERATIVE_AI_API_KEY = process.env.GEMINI_API_KEY
   }
 }
 
@@ -72,7 +57,7 @@ export async function runWhatsappAssistant(input: {
   phoneNumber: string
   message: string
 }) {
-  ensureGeminiApiKey()
+  const model = getLlmModel()
 
   const supabase = createAdminClient()
 
@@ -157,7 +142,7 @@ export async function runWhatsappAssistant(input: {
   ].join("\n")
 
   const result = await generateText({
-    model: google("gemini-2.0-flash"),
+    model,
     system,
     prompt: input.message,
     tools: {

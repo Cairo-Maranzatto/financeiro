@@ -1,4 +1,4 @@
-import { google } from "@ai-sdk/google"
+import { getLlmModel } from "@/features/llm/server/llm-provider"
 import { convertToModelMessages, streamText, tool, type UIMessage } from "ai"
 import { NextResponse } from "next/server"
 import { z } from "zod"
@@ -38,21 +38,12 @@ function resolveCurrentFinancialMonth(timezone: string, startDay: number) {
 }
 
 export async function POST(request: Request) {
-  if (
-    !process.env.GEMINI_API_KEY &&
-    !process.env.GOOGLE_GENERATIVE_AI_API_KEY
-  ) {
-    return NextResponse.json(
-      {
-        error:
-          "Missing API key. Configure GEMINI_API_KEY or GOOGLE_GENERATIVE_AI_API_KEY.",
-      },
-      { status: 500 }
-    )
-  }
-
-  if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY && process.env.GEMINI_API_KEY) {
-    process.env.GOOGLE_GENERATIVE_AI_API_KEY = process.env.GEMINI_API_KEY
+  let model
+  try {
+    model = getLlmModel()
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error"
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 
   const body = (await request.json()) as ChatRequestBody
@@ -159,7 +150,7 @@ export async function POST(request: Request) {
   ].join("\n")
 
   const result = streamText({
-    model: google("gemini-2.0-flash"),
+    model,
     system,
     messages: modelMessages,
     tools: {
