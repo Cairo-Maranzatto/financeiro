@@ -36,9 +36,22 @@ function formatMessageText(message: MessageLike) {
     .map((part) => {
       if (!part || typeof part !== "object") return ""
 
-      const maybePart = part as { type?: string; text?: string; state?: string }
+      const maybePart = part as {
+        type?: string
+        text?: string
+        state?: string
+        result?: unknown
+      }
       if (maybePart.type === "text" && typeof maybePart.text === "string") {
         return maybePart.text
+      }
+
+      if (maybePart.type === "tool-result") {
+        const resultText =
+          typeof maybePart.result === "string"
+            ? maybePart.result
+            : JSON.stringify(maybePart.result, null, 2)
+        return resultText
       }
 
       if (
