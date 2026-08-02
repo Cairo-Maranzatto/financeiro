@@ -157,7 +157,7 @@ export async function runWhatsappAssistant(input: {
   ].join("\n")
 
   const result = await generateText({
-    model: google("gemini-1.5-flash"),
+    model: google("gemini-2.0-flash"),
     system,
     prompt: input.message,
     tools: {
