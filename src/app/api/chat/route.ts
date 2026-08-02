@@ -345,6 +345,7 @@ export async function POST(request: Request) {
           if (error) {
             log("error", "llm.tool.queryDatabaseTool.failed", {
               error: error.message,
+              query,
               userId: user.id,
             })
             throw new Error(error.message)
