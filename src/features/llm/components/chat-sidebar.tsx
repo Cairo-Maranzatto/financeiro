@@ -41,17 +41,22 @@ function formatMessageText(message: MessageLike) {
         text?: string
         state?: string
         result?: unknown
+        output?: unknown
       }
       if (maybePart.type === "text" && typeof maybePart.text === "string") {
         return maybePart.text
       }
 
-      if (maybePart.type === "tool-result") {
-        const resultText =
-          typeof maybePart.result === "string"
-            ? maybePart.result
-            : JSON.stringify(maybePart.result, null, 2)
-        return resultText
+      if (
+        maybePart.type === "tool-output-available" ||
+        maybePart.type === "tool-result"
+      ) {
+        const resultData = maybePart.output ?? maybePart.result
+        if (resultData) {
+          return typeof resultData === "string"
+            ? resultData
+            : JSON.stringify(resultData, null, 2)
+        }
       }
 
       if (

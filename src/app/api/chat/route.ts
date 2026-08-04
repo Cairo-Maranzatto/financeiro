@@ -1,5 +1,11 @@
 import { getLlmModel } from "@/features/llm/server/llm-provider"
-import { convertToModelMessages, streamText, tool, type UIMessage } from "ai"
+import {
+  convertToModelMessages,
+  streamText,
+  tool,
+  type UIMessage,
+  isStepCount,
+} from "ai"
 import { NextResponse } from "next/server"
 import { z } from "zod"
 
@@ -153,6 +159,7 @@ export async function POST(request: Request) {
     model,
     system,
     messages: modelMessages,
+    stopWhen: isStepCount(5),
     tools: {
       getAccountBalances: tool({
         description:

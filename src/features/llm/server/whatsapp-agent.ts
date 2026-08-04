@@ -1,5 +1,5 @@
 import { getLlmModel } from "@/features/llm/server/llm-provider"
-import { generateText, tool } from "ai"
+import { generateText, tool, isStepCount } from "ai"
 import { z } from "zod"
 
 import { payInvoiceSchema } from "@/features/credit-cards/domain/schemas"
@@ -145,6 +145,7 @@ export async function runWhatsappAssistant(input: {
     model,
     system,
     prompt: input.message,
+    stopWhen: isStepCount(5),
     tools: {
       getAccountBalances: tool({
         description:
