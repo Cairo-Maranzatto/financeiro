@@ -150,7 +150,7 @@ export async function runWhatsappAssistant(input: {
       getAccountBalances: tool({
         description:
           "Retorna saldos agregados por moeda, considerando apenas transações pagas.",
-        inputSchema: z.object({}),
+        inputSchema: z.object({}).nullish(),
         execute: async () => {
           const { data, error } = await supabase
             .from("transactions")

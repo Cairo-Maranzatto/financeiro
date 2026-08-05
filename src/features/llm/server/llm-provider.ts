@@ -37,7 +37,7 @@ export function getLlmModel(): LanguageModel {
 
   if (provider === "groq") {
     ensureGroqApiKey()
-    return groq("llama-3.3-70b-versatile")
+    return groq("qwen/qwen3.6-27b")
   }
 
   ensureGeminiApiKey()

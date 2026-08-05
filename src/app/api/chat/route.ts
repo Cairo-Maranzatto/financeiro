@@ -164,7 +164,7 @@ export async function POST(request: Request) {
       getAccountBalances: tool({
         description:
           "Retorna saldos agregados por moeda, considerando apenas transações pagas.",
-        inputSchema: z.object({}),
+        inputSchema: z.object({}).nullish(),
         execute: async () => {
           const { data, error } = await supabase.rpc("get_balances_by_currency")
 
