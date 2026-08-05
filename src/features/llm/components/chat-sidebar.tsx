@@ -32,6 +32,24 @@ function formatMessageText(message: MessageLike) {
 
   if (!Array.isArray(message.parts)) return ""
 
+  const textParts = message.parts
+    .filter(
+      (p): p is { type: "text"; text: string } =>
+        !!p &&
+        typeof p === "object" &&
+        "type" in p &&
+        p.type === "text" &&
+        "text" in p &&
+        typeof p.text === "string"
+    )
+    .map((p) => p.text)
+    .join("\n")
+    .trim()
+
+  if (textParts.length > 0) {
+    return textParts
+  }
+
   return message.parts
     .map((part) => {
       if (!part || typeof part !== "object") return ""
