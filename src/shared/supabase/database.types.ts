@@ -925,6 +925,50 @@ export type Database = {
         }
         Returns: string
       }
+      get_report_by_category: {
+        Args: {
+          p_account_id?: string
+          p_end_exclusive: string
+          p_level?: string
+          p_start: string
+          p_timezone?: string
+          p_type: string
+        }
+        Returns: {
+          category_id: string
+          category_name: string
+          total: number
+        }[]
+      }
+      get_report_totals: {
+        Args: {
+          p_account_id?: string
+          p_end_exclusive: string
+          p_start: string
+          p_timezone?: string
+        }
+        Returns: {
+          currency: string
+          expense: number
+          income: number
+          net: number
+        }[]
+      }
+      get_report_trend: {
+        Args: {
+          p_account_id?: string
+          p_end_exclusive: string
+          p_interval?: string
+          p_start: string
+          p_timezone?: string
+        }
+        Returns: {
+          currency: string
+          expense: number
+          income: number
+          period: string
+        }[]
+      }
       pagar_fatura: {
         Args: { p_account_id: string; p_invoice_id: string; p_paid_at?: string }
         Returns: undefined

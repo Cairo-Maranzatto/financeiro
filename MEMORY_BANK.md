@@ -16,17 +16,18 @@
 
 ## Contexto Atual
 
-_(Atualizado em: 2026-07-31)_
+_(Atualizado em: 2026-08-20)_
 
-- **Fase do projeto:** 🟢 **MVP em produção + Aprimoramentos em andamento (Lançamentos Futuros e LLM).** Fases 0–6 do MVP e Fases A0–A6 do aprimoramento de categorias concluídas. **Fases LLM 1-5 implementadas e deployadas:** backend chat, UI web, tools de escrita, entrada WhatsApp e RAG analítico seguro (queryDatabaseTool).
+- **Fase do projeto:** 🟢 **MVP em produção + Aprimoramentos em andamento (Relatórios, Lançamentos Futuros e LLM).** Fases 0–6 do MVP e Fases A0–A6 do aprimoramento de categorias concluídas. **Tela de Relatórios Avançados implementada:** análise por período, filtros por conta, gráficos de tendência e categoria, e exportação CSV. Fases LLM 1-5 implementadas e deployadas.
 - **URL de produção:** https://financeiro-virid-phi.vercel.app/ — código atual de `master` em deploy/redeploy contínuo.
-- **Estado do repositório:** alterações da sessão (Fase LLM 5 + ajustes no webhook) commitadas e enviadas para `master`.
+- **Estado do repositório:** alterações da sessão (Tela de Relatórios Avançados) implementadas e build validado (35 rotas).
 - **Infraestrutura ativa:**
-  - Supabase cloud (project `xtyrsoeyreicinlvycwk`) — RLS ativo em todas as tabelas. 6 migrations do aprimoramento aplicadas (`20260708140000` a `20260709120000`).
+  - Supabase cloud (project `xtyrsoeyreicinlvycwk`) — RLS ativo em todas as tabelas. Nova migration `20260820120000_reports_functions.sql` criada para suporte a relatórios.
   - Vercel — Next.js 16.2.9, cron jobs ativos (`close-invoices` 03h UTC, `generate-recurrences` 04h UTC).
   - GitHub Actions CI — lint → typecheck → vitest → build em cada push/PR.
 - **Pendências abertas (não bloqueiam uso):**
-  - Configurar `GEMINI_API_KEY` na Vercel — sem esse token, o chat e o WhatsApp não conseguem chamar o Gemini (retornam 500 na `POST /api/chat` e no webhook).
+  - Aplicar migration `20260820120000_reports_functions.sql` no Supabase (produção).
+  - Configurar `GEMINI_API_KEY` na Vercel — sem esse token, o chat e o WhatsApp não conseguem chamar o Gemini.
   - Aplicar migration `20260723102000_future_transactions_l1_status_filters.sql` no Supabase (produção) após checklist manual final; ela altera RPCs de saldo/dashboard/orçamento para considerar apenas `status = 'Pago'`.
   - Continuar fases L2-L4 do plano `fases/aprimoramento/lancamentos/PLANEJAMENTO_PREVISTO_REALIZADO.md` (visual de pendentes, efetivação rápida, projeção, recorrências antecipadas).
   - Trocar senha do banco Supabase (Project Settings → Database → Reset password) — senha `Senha984746@` foi exposta no histórico do chat.
@@ -42,6 +43,27 @@ _(Atualizado em: 2026-07-31)_
 ## Linha do Tempo de Progresso
 
 _(Mais recente no topo. Uma entrada por sessão/marco relevante.)_
+
+### 2026-08-20 — Execução: Tela de Relatórios Avançados concluída
+
+1. **Infraestrutura de Banco para Relatórios:**
+   - Migration `supabase/migrations/20260820120000_reports_functions.sql` criada.
+   - Funções RPC: `get_report_totals` (saldos segregados por moeda), `get_report_by_category` (agregação hierárquica) e `get_report_trend` (evolução temporal).
+   - Suporte a filtro opcional por `p_account_id` em todas as funções analíticas.
+2. **Camada de API e Hooks:**
+   - Rota `api/reports` implementada para consolidar todos os dados do relatório em uma única requisição.
+   - Hook `useReport` e cliente API com suporte a filtros dinâmicos via URL SearchParams.
+3. **UI de Relatórios:**
+   - Componente `ReportFiltersPanel` com seletores de data, conta, intervalo e nível de categoria.
+   - Presets de data ("Este Mês", "Este Ano", "Últimos 12 Meses") e função de Reset.
+   - Gráficos avançados com `recharts`: Fluxo de Caixa (Área) e Distribuição por Categoria (Pizza).
+   - Tabela detalhada de transações do período com status e categorias.
+4. **Funcionalidades Extras:**
+   - Exportação para CSV implementada no cliente, respeitando os filtros ativos.
+   - Navegação integrada no `AppHeader`.
+5. **Validação Técnica:**
+   - `pnpm build` passou com sucesso (35 rotas).
+   - Tipagem rigorosa em todos os componentes de gráfico e filtros.
 
 ### 2026-07-31 — Execução: Fase LLM 5 (RAG SQL) concluída + fechamento do ciclo WhatsApp
 

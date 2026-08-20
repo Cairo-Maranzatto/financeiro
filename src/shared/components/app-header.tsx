@@ -1,3 +1,4 @@
+import * as React from "react"
 import Link from "next/link"
 
 import { SignOutButton } from "@/features/identity/components/sign-out-button"
@@ -13,6 +14,9 @@ export function AppHeader() {
         <nav className="text-muted-foreground flex gap-4 text-sm">
           <Link href="/" className="hover:text-foreground">
             Dashboard
+          </Link>
+          <Link href="/relatorios" className="hover:text-foreground">
+            Relatórios
           </Link>
           <Link href="/contas" className="hover:text-foreground">
             Contas
