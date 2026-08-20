@@ -78,11 +78,11 @@ export function ReportCategoryChart({ data, title }: ReportCategoryChartProps) {
                 ))}
               </Pie>
               <Tooltip
-                formatter={(value: string | number) =>
+                formatter={(value: string | number | undefined) =>
                   new Intl.NumberFormat("pt-BR", {
                     style: "decimal",
                     minimumFractionDigits: 2,
-                  }).format(Number(value))
+                  }).format(Number(value || 0))
                 }
               />
               <Legend />

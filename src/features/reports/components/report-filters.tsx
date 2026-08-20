@@ -88,7 +88,8 @@ export function ReportFiltersPanel({ filters, onChange }: ReportFiltersProps) {
         <Label>Intervalo do Gráfico</Label>
         <Select
           value={filters.trendInterval}
-          onValueChange={(v: string) =>
+          onValueChange={(v) =>
+            v &&
             onChange({
               ...filters,
               trendInterval: v as ReportFilters["trendInterval"],
@@ -111,7 +112,8 @@ export function ReportFiltersPanel({ filters, onChange }: ReportFiltersProps) {
         <Label>Nível de Categoria</Label>
         <Select
           value={filters.categoryLevel}
-          onValueChange={(v: string) =>
+          onValueChange={(v) =>
+            v &&
             onChange({
               ...filters,
               categoryLevel: v as ReportFilters["categoryLevel"],

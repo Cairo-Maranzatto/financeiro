@@ -103,14 +103,14 @@ export function ReportTrendChart({ data }: ReportTrendChartProps) {
                     />
                     <YAxis />
                     <Tooltip
-                      labelFormatter={(value: string) =>
+                      labelFormatter={(value: string | number | Date) =>
                         value ? new Date(value).toLocaleDateString("pt-BR") : ""
                       }
-                      formatter={(value: string | number) =>
+                      formatter={(value: string | number | undefined) =>
                         new Intl.NumberFormat("pt-BR", {
                           style: "currency",
                           currency: currency,
-                        }).format(Number(value))
+                        }).format(Number(value || 0))
                       }
                     />
                     <Area
