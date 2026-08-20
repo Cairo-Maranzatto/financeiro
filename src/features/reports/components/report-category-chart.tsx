@@ -78,11 +78,14 @@ export function ReportCategoryChart({ data, title }: ReportCategoryChartProps) {
                 ))}
               </Pie>
               <Tooltip
-                formatter={(value: string | number | undefined) =>
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                formatter={(value: any) =>
                   new Intl.NumberFormat("pt-BR", {
                     style: "decimal",
                     minimumFractionDigits: 2,
-                  }).format(Number(value || 0))
+                  }).format(
+                    Number(Array.isArray(value) ? value[0] : value || 0)
+                  )
                 }
               />
               <Legend />
