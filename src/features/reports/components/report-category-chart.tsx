@@ -10,6 +10,8 @@ import {
   Legend,
 } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card"
+import { cn } from "@/shared/lib/utils"
+import { Button } from "@/shared/ui/button"
 
 interface CategoryData {
   category_id: string
@@ -20,6 +22,8 @@ interface CategoryData {
 interface ReportCategoryChartProps {
   data: CategoryData[]
   title: string
+  onCategoryClick?: (categoryId: string) => void
+  selectedCategoryId?: string | null
 }
 
 const COLORS = [
@@ -33,7 +37,12 @@ const COLORS = [
   "#ec4899", // pink
 ]
 
-export function ReportCategoryChart({ data, title }: ReportCategoryChartProps) {
+export function ReportCategoryChart({
+  data,
+  title,
+  onCategoryClick,
+  selectedCategoryId,
+}: ReportCategoryChartProps) {
   if (data.length === 0) {
     return (
       <Card className="h-full">
@@ -50,12 +59,28 @@ export function ReportCategoryChart({ data, title }: ReportCategoryChartProps) {
   const chartData = data.map((d) => ({
     name: d.category_name,
     value: Number(d.total),
+    category_id: d.category_id,
   }))
 
   return (
-    <Card className="h-full">
-      <CardHeader>
+    <Card
+      className={cn(
+        "h-full transition-all",
+        selectedCategoryId && "ring-primary ring-2"
+      )}
+    >
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle>{title}</CardTitle>
+        {selectedCategoryId && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onCategoryClick?.("")}
+            className="h-8 px-2 text-xs"
+          >
+            Limpar Filtro
+          </Button>
+        )}
       </CardHeader>
       <CardContent>
         <div className="h-[300px] w-full">
@@ -69,6 +94,13 @@ export function ReportCategoryChart({ data, title }: ReportCategoryChartProps) {
                 outerRadius={80}
                 paddingAngle={5}
                 dataKey="value"
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                onClick={(entry: any) => {
+                  if (entry && entry.category_id) {
+                    onCategoryClick?.(entry.category_id)
+                  }
+                }}
+                className="cursor-pointer"
               >
                 {chartData.map((_, index) => (
                   <Cell

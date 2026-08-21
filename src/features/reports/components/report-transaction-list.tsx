@@ -19,15 +19,17 @@ interface Transaction {
 
 interface ReportTransactionListProps {
   transactions: Transaction[]
+  title?: string
 }
 
 export function ReportTransactionList({
   transactions,
+  title = "Transações do Período",
 }: ReportTransactionListProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Transações do Período</CardTitle>
+        <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">

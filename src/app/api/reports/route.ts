@@ -64,7 +64,9 @@ export async function GET(request: NextRequest) {
       (() => {
         let query = supabase
           .from("transactions")
-          .select("*, categories(name, icon), accounts(name)")
+          .select(
+            "*, categories(name, icon, parent_category_id), accounts(name)"
+          )
           .is("deleted_at", null)
           .order("occurred_at", { ascending: false })
           .gte("occurred_at", new Date(filters.start).toISOString())

@@ -26,6 +26,9 @@ export function ReportsView() {
   }
 
   const [filters, setFilters] = useState<ReportFilters>(initialFilters)
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
+    null
+  )
 
   const setPreset = (preset: "thisMonth" | "thisYear" | "last12Months") => {
     const today = new Date()
@@ -46,6 +49,12 @@ export function ReportsView() {
       start: toDateString(start),
       endExclusive: toDateString(end),
     })
+    setSelectedCategoryId(null)
+  }
+
+  const handleFilterChange = (newFilters: ReportFilters) => {
+    setFilters(newFilters)
+    setSelectedCategoryId(null)
   }
 
   const exportToCsv = () => {
@@ -61,7 +70,7 @@ export function ReportsView() {
       "Valor",
       "Moeda",
     ]
-    const rows = data.transactions.map((tx) => [
+    const rows = filteredTransactions.map((tx) => [
       new Date(tx.occurred_at).toLocaleDateString("pt-BR"),
       tx.description || "",
       tx.accounts?.name || "",
@@ -96,6 +105,24 @@ export function ReportsView() {
   }
 
   const { data, isLoading, error } = useReport(filters)
+
+  const filteredTransactions =
+    data?.transactions.filter((tx) => {
+      if (!selectedCategoryId) return true
+
+      if (filters.categoryLevel === "parent") {
+        const txParentId = tx.categories?.parent_category_id || tx.category_id
+        return txParentId === selectedCategoryId
+      } else {
+        return tx.category_id === selectedCategoryId
+      }
+    }) || []
+
+  const selectedCategoryName =
+    data?.categoriesIncome.find((c) => c.category_id === selectedCategoryId)
+      ?.category_name ||
+    data?.categoriesExpense.find((c) => c.category_id === selectedCategoryId)
+      ?.category_name
 
   return (
     <div className="container mx-auto max-w-7xl space-y-8 px-4 py-8">
@@ -132,21 +159,24 @@ export function ReportsView() {
             variant="default"
             size="sm"
             onClick={exportToCsv}
-            disabled={!data?.transactions?.length}
+            disabled={!filteredTransactions.length}
           >
             Exportar CSV
           </Button>
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setFilters(initialFilters)}
+            onClick={() => {
+              setFilters(initialFilters)
+              setSelectedCategoryId(null)
+            }}
           >
             Resetar
           </Button>
         </div>
       </div>
 
-      <ReportFiltersPanel filters={filters} onChange={setFilters} />
+      <ReportFiltersPanel filters={filters} onChange={handleFilterChange} />
 
       {isLoading && (
         <div className="flex items-center justify-center py-20">
@@ -170,14 +200,25 @@ export function ReportsView() {
             <ReportCategoryChart
               data={data.categoriesIncome}
               title="Receitas por Categoria"
+              onCategoryClick={setSelectedCategoryId}
+              selectedCategoryId={selectedCategoryId}
             />
             <ReportCategoryChart
               data={data.categoriesExpense}
               title="Despesas por Categoria"
+              onCategoryClick={setSelectedCategoryId}
+              selectedCategoryId={selectedCategoryId}
             />
           </div>
 
-          <ReportTransactionList transactions={data.transactions} />
+          <ReportTransactionList
+            transactions={filteredTransactions}
+            title={
+              selectedCategoryName
+                ? `Transações: ${selectedCategoryName}`
+                : "Transações do Período"
+            }
+          />
         </div>
       )}
     </div>

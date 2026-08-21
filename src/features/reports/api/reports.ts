@@ -31,7 +31,12 @@ export type ReportData = {
     status: string
     description: string | null
     occurred_at: string
-    categories: { name: string; icon: string | null } | null
+    category_id: string | null
+    categories: {
+      name: string
+      icon: string | null
+      parent_category_id: string | null
+    } | null
     accounts: { name: string } | null
   }[]
   filters: ReportFilters
