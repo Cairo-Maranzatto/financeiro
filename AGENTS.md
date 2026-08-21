@@ -7,7 +7,7 @@ Este documento fornece uma visão técnica e operacional resumida para agentes d
 Hub de inteligência financeira pessoal (PWA) construído com foco em escalabilidade para SaaS e automações de IA.
 
 - **Stack Principal:** Next.js 16.2.9 (App Router), TypeScript, Supabase (DB/Auth/RLS), Tailwind CSS 4, TanStack Query, Zod.
-- **Status:** MVP concluído e em produção. Aprimoramentos de categorias e relatórios avançados implementados.
+- **Status:** MVP concluído e em produção. Aprimoramentos de categorias e Dashboard analítico (Relatórios) implementados.
 
 ## 2. Estrutura e Subprojetos
 

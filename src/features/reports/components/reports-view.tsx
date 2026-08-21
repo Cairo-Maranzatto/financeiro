@@ -105,7 +105,7 @@ export function ReportsView() {
     <div className="container mx-auto max-w-7xl space-y-8 px-4 py-8">
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold tracking-tight">Relatórios</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground">
             Análise detalhada do seu fluxo financeiro e composição de gastos.
           </p>
@@ -140,20 +140,17 @@ export function ReportsView() {
           >
             Exportar
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setFilters(initialFilters)
-              setSelectedCategoryId(null)
-            }}
-          >
-            Resetar
-          </Button>
         </div>
       </div>
 
-      <ReportFiltersPanel filters={filters} onChange={handleFilterChange} />
+      <ReportFiltersPanel
+        filters={filters}
+        onChange={handleFilterChange}
+        onReset={() => {
+          setFilters(initialFilters)
+          setSelectedCategoryId(null)
+        }}
+      />
 
       {isLoading && (
         <div className="flex items-center justify-center py-20">

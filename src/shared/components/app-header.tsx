@@ -15,9 +15,6 @@ export function AppHeader() {
           <Link href="/" className="hover:text-foreground">
             Dashboard
           </Link>
-          <Link href="/relatorios" className="hover:text-foreground">
-            Relatórios
-          </Link>
           <Link href="/contas" className="hover:text-foreground">
             Contas
           </Link>

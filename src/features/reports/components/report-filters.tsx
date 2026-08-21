@@ -12,10 +12,13 @@ import {
 } from "@/shared/ui/select"
 import { ReportFilters } from "../domain/schemas"
 import { useAccounts } from "@/features/accounts/hooks/use-accounts"
+import { Button } from "@/shared/ui/button"
+import { FilterXIcon } from "lucide-react"
 
 interface ReportFiltersProps {
   filters: ReportFilters
   onChange: (filters: ReportFilters) => void
+  onReset: () => void
 }
 
 const INTERVAL_LABELS: Record<string, string> = {
@@ -29,11 +32,15 @@ const LEVEL_LABELS: Record<string, string> = {
   child: "Subcategorias",
 }
 
-export function ReportFiltersPanel({ filters, onChange }: ReportFiltersProps) {
+export function ReportFiltersPanel({
+  filters,
+  onChange,
+  onReset,
+}: ReportFiltersProps) {
   const { data: accounts } = useAccounts()
 
   return (
-    <div className="bg-card flex flex-wrap gap-4 rounded-lg border p-4 shadow-sm">
+    <div className="bg-card flex flex-wrap items-end gap-4 rounded-lg border p-4 shadow-sm">
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="start">Início</Label>
         <Input
@@ -143,6 +150,18 @@ export function ReportFiltersPanel({ filters, onChange }: ReportFiltersProps) {
             <SelectItem value="child">Subcategorias</SelectItem>
           </SelectContent>
         </Select>
+      </div>
+
+      <div className="ml-auto flex flex-col gap-1.5">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onReset}
+          className="text-muted-foreground hover:text-foreground h-9"
+        >
+          <FilterXIcon className="mr-2 size-4" />
+          Limpar filtros
+        </Button>
       </div>
     </div>
   )

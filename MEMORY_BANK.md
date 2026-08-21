@@ -16,19 +16,18 @@
 
 ## Contexto Atual
 
-_(Atualizado em: 2026-08-20)_
+_(Atualizado em: 2026-08-21)_
 
-- **Fase do projeto:** 🟢 **MVP em produção + Aprimoramentos em andamento (Relatórios, Lançamentos Futuros e LLM).** Fases 0–6 do MVP e Fases A0–A6 do aprimoramento de categorias concluídas. **Tela de Relatórios Avançados implementada:** análise por período, filtros por conta, gráficos de tendência e categoria, e exportação CSV. Fases LLM 1-5 implementadas e deployadas.
+- **Fase do projeto:** 🟢 **MVP em produção + Aprimoramentos concluídos (Relatórios Avançados e LLM).** Fases 0–6 do MVP e Fases A0–A6 do aprimoramento de categorias concluídas. **Dashboard substituído pela nova Tela de Relatórios Avançados:** agora o sistema inicia diretamente na visão analítica com filtros dinâmicos, gráficos de tendência e exportação para impressão. Fases LLM 1-5 implementadas e deployadas.
 - **URL de produção:** https://financeiro-virid-phi.vercel.app/ — código atual de `master` em deploy/redeploy contínuo.
-- **Estado do repositório:** alterações da sessão (Tela de Relatórios Avançados) implementadas e build validado (35 rotas).
+- **Estado do repositório:** Dashboard unificado com Relatórios, build validado (35 rotas).
 - **Infraestrutura ativa:**
-  - Supabase cloud (project `xtyrsoeyreicinlvycwk`) — RLS ativo em todas as tabelas. Nova migration `20260820120000_reports_functions.sql` criada para suporte a relatórios.
+  - Supabase cloud (project `xtyrsoeyreicinlvycwk`) — RLS ativo em todas as tabelas. Migration `20260820120000_reports_functions.sql` aplicada em produção.
   - Vercel — Next.js 16.2.9, cron jobs ativos (`close-invoices` 03h UTC, `generate-recurrences` 04h UTC).
   - GitHub Actions CI — lint → typecheck → vitest → build em cada push/PR.
 - **Pendências abertas (não bloqueiam uso):**
-  - Aplicar migration `20260820120000_reports_functions.sql` no Supabase (produção).
   - Configurar `GEMINI_API_KEY` na Vercel — sem esse token, o chat e o WhatsApp não conseguem chamar o Gemini.
-  - Aplicar migration `20260723102000_future_transactions_l1_status_filters.sql` no Supabase (produção) após checklist manual final; ela altera RPCs de saldo/dashboard/orçamento para considerar apenas `status = 'Pago'`.
+  - Aplicar migration `20260723102000_future_transactions_l1_status_filters.sql` no Supabase (produção) após checklist manual final.
   - Continuar fases L2-L4 do plano `fases/aprimoramento/lancamentos/PLANEJAMENTO_PREVISTO_REALIZADO.md` (visual de pendentes, efetivação rápida, projeção, recorrências antecipadas).
   - Trocar senha do banco Supabase (Project Settings → Database → Reset password) — senha `Senha984746@` foi exposta no histórico do chat.
   - Configurar DSN do Sentry (opcional — app funciona sem; erros ficam invisíveis sem ele).
@@ -43,6 +42,23 @@ _(Atualizado em: 2026-08-20)_
 ## Linha do Tempo de Progresso
 
 _(Mais recente no topo. Uma entrada por sessão/marco relevante.)_
+
+### 2026-08-21 — Execução: Unificação do Dashboard com Relatórios e Exportação para Impressão
+
+1. **Dashboard Unificado:**
+   - A tela de Relatórios Avançados substituiu o antigo Dashboard como a página inicial (`/`).
+   - Rota `/relatorios` removida para centralizar a visão analítica no Dashboard.
+   - Menu de navegação simplificado no `AppHeader`.
+2. **Exportação Profissional:**
+   - Botão "Exportar CSV" substituído por "Exportar" com geração de layout HTML formatado para impressão (A4).
+   - Relatório impresso inclui DRE detalhada, indicadores financeiros e suporte multimoeda.
+3. **Melhorias na UX de Filtros:**
+   - Campo de pesquisa por texto livre (Descrição) adicionado ao painel de filtros.
+   - Botão "Limpar filtros" movido para dentro do painel para melhor acessibilidade.
+   - Somatório total (por moeda) adicionado ao rodapé da lista de transações.
+4. **Infraestrutura Aplicada:**
+   - Migration `20260820120000_reports_functions.sql` aplicada com sucesso ao banco de produção via CLI.
+   - Erros de tipagem do Recharts e ESLint corrigidos para garantir builds estáveis na Vercel.
 
 ### 2026-08-20 — Execução: Tela de Relatórios Avançados concluída
 

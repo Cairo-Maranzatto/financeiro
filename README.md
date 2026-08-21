@@ -1,5 +1,15 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## 🚀 Funcionalidades Atuais
+
+- **Dashboard Analítico:** Visão completa com gráficos de fluxo de caixa e composição por categorias.
+- **Relatórios Avançados:** Filtros dinâmicos por período, contas, categorias e busca por descrição.
+- **Exportação para Impressão:** Geração de relatórios financeiros (DRE) formatados para A4/PDF.
+- **Gestão de Contas:** Controle de saldos e transações em múltiplas moedas (BRL, USD, BTC).
+- **Categorias Hierárquicas:** Taxonomia completa com 16 categorias-pai e dezenas de subcategorias.
+- **Inteligência Artificial (LLM):** Assistente integrado para consultas e comandos via chat.
+- **WhatsApp:** Integração para lançamento de despesas e consultas via mensagens.
+
 ## Getting Started
 
 First, run the development server:

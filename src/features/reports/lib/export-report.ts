@@ -11,6 +11,7 @@ export function generateReportHtml(
     status: string
     description: string | null
     occurred_at: string
+    category_id: string | null
     categories: {
       name: string
       icon: string | null
