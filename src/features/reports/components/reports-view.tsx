@@ -11,6 +11,7 @@ import { ReportTrendChart } from "./report-trend-chart"
 import { ReportCategoryChart } from "./report-category-chart"
 import { ReportTransactionList } from "./report-transaction-list"
 import { Button } from "@/shared/ui/button"
+import { generateReportHtml } from "../lib/export-report"
 
 export function ReportsView() {
   const now = new Date()
@@ -57,51 +58,14 @@ export function ReportsView() {
     setSelectedCategoryId(null)
   }
 
-  const exportToCsv = () => {
-    if (!data?.transactions) return
-
-    const headers = [
-      "Data",
-      "Descrição",
-      "Conta",
-      "Categoria",
-      "Tipo",
-      "Status",
-      "Valor",
-      "Moeda",
-    ]
-    const rows = filteredTransactions.map((tx) => [
-      new Date(tx.occurred_at).toLocaleDateString("pt-BR"),
-      tx.description || "",
-      tx.accounts?.name || "",
-      tx.categories?.name || "",
-      tx.type,
-      tx.status,
-      tx.amount.toString(),
-      tx.currency,
-    ])
-
-    const csvContent = [
-      headers.join(","),
-      ...rows.map((row) =>
-        row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(",")
-      ),
-    ].join("\n")
-
-    const blob = new Blob(["\ufeff" + csvContent], {
-      type: "text/csv;charset=utf-8;",
-    })
-    const link = document.createElement("a")
-    const url = URL.createObjectURL(blob)
-    link.setAttribute("href", url)
-    link.setAttribute(
-      "download",
-      `relatorio_${filters.start}_ate_${filters.endExclusive}.csv`
-    )
-    link.style.visibility = "hidden"
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+  const handleExport = () => {
+    if (!data) return
+    const html = generateReportHtml(data, filteredTransactions, filters)
+    const printWindow = window.open("", "_blank")
+    if (printWindow) {
+      printWindow.document.write(html)
+      printWindow.document.close()
+    }
   }
 
   const { data, isLoading, error } = useReport(filters)
@@ -171,10 +135,10 @@ export function ReportsView() {
           <Button
             variant="default"
             size="sm"
-            onClick={exportToCsv}
+            onClick={handleExport}
             disabled={!filteredTransactions.length}
           >
-            Exportar CSV
+            Exportar
           </Button>
           <Button
             variant="ghost"
