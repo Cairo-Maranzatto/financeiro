@@ -103,6 +103,35 @@ export function ReportTransactionList({
                 ))
               )}
             </tbody>
+            {transactions.length > 0 && (
+              <tfoot>
+                {Array.from(new Set(transactions.map((tx) => tx.currency))).map(
+                  (currency) => {
+                    const total = transactions
+                      .filter((tx) => tx.currency === currency)
+                      .reduce((acc, tx) => acc + tx.amount, 0)
+                    return (
+                      <tr key={currency} className="bg-muted/30 font-bold">
+                        <td colSpan={4} className="px-2 py-3 text-right">
+                          Total {currency}
+                        </td>
+                        <td
+                          className={cn(
+                            "px-2 py-3 text-right whitespace-nowrap",
+                            total >= 0 ? "text-green-600" : "text-red-600"
+                          )}
+                        >
+                          {new Intl.NumberFormat("pt-BR", {
+                            style: "currency",
+                            currency: currency,
+                          }).format(total)}
+                        </td>
+                      </tr>
+                    )
+                  }
+                )}
+              </tfoot>
+            )}
           </table>
         </div>
       </CardContent>

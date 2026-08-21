@@ -85,6 +85,19 @@ export function ReportFiltersPanel({ filters, onChange }: ReportFiltersProps) {
         </Select>
       </div>
       <div className="flex flex-col gap-1.5">
+        <Label htmlFor="description">Descrição</Label>
+        <Input
+          type="text"
+          id="description"
+          placeholder="Pesquisar descrição..."
+          className="w-[200px]"
+          value={filters.description || ""}
+          onChange={(e) =>
+            onChange({ ...filters, description: e.target.value })
+          }
+        />
+      </div>
+      <div className="flex flex-col gap-1.5">
         <Label>Intervalo do Gráfico</Label>
         <Select
           value={filters.trendInterval}

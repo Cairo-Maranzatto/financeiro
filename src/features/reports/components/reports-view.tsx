@@ -108,14 +108,27 @@ export function ReportsView() {
 
   const filteredTransactions =
     data?.transactions.filter((tx) => {
-      if (!selectedCategoryId) return true
+      // Filter by category
+      if (selectedCategoryId) {
+        const matchesCategory =
+          filters.categoryLevel === "parent"
+            ? (tx.categories?.parent_category_id || tx.category_id) ===
+              selectedCategoryId
+            : tx.category_id === selectedCategoryId
 
-      if (filters.categoryLevel === "parent") {
-        const txParentId = tx.categories?.parent_category_id || tx.category_id
-        return txParentId === selectedCategoryId
-      } else {
-        return tx.category_id === selectedCategoryId
+        if (!matchesCategory) return false
       }
+
+      // Filter by search description
+      if (filters.description) {
+        const search = filters.description.toLowerCase()
+        const matchesDescription = tx.description
+          ?.toLowerCase()
+          .includes(search)
+        if (!matchesDescription) return false
+      }
+
+      return true
     }) || []
 
   const selectedCategoryName =
