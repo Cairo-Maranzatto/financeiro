@@ -94,8 +94,14 @@ export async function GET(request: NextRequest) {
     })
   } catch (error: unknown) {
     console.error("Report API Error:", error)
-    const message =
-      error instanceof Error ? error.message : "Internal Server Error"
+    let message = "Internal Server Error"
+    if (error instanceof Error) {
+      message = error.message
+    } else if (error && typeof error === "object" && "message" in error) {
+      message = String(error.message)
+    } else if (error && typeof error === "object" && "details" in error) {
+      message = String(error.details)
+    }
     return NextResponse.json({ error: message }, { status: 400 })
   }
 }
