@@ -452,6 +452,7 @@ export type Database = {
           default_account_id: string | null
           deleted_at: string | null
           deleted_by: string | null
+          direction: string
           id: string
           installments_count: number
           interest_rate: number
@@ -469,6 +470,7 @@ export type Database = {
           default_account_id?: string | null
           deleted_at?: string | null
           deleted_by?: string | null
+          direction: string
           id?: string
           installments_count: number
           interest_rate: number
@@ -486,6 +488,7 @@ export type Database = {
           default_account_id?: string | null
           deleted_at?: string | null
           deleted_by?: string | null
+          direction?: string
           id?: string
           installments_count?: number
           interest_rate?: number
@@ -847,6 +850,7 @@ export type Database = {
         Args: {
           p_currency: string
           p_default_account_id: string
+          p_direction: string
           p_installments: Json
           p_installments_count: number
           p_interest_rate: number

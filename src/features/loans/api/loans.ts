@@ -1,6 +1,9 @@
 import { createClient } from "@/shared/supabase/client"
 import type { LoanInstallment } from "@/features/loans/domain/loan-calculator"
-import type { CreateLoanInput } from "@/features/loans/domain/schemas"
+import type {
+  CreateLoanInput,
+  UpdateLoanInput,
+} from "@/features/loans/domain/schemas"
 
 export type LoanRow = {
   id: string
@@ -10,6 +13,7 @@ export type LoanRow = {
   installments_count: number
   currency: string
   status: string
+  direction: string
   default_account_id: string | null
   created_at: string
   accounts: { name: string } | null
@@ -76,6 +80,22 @@ export async function deleteLoan(id: string): Promise<void> {
   const { error } = await supabase
     .from("loans")
     .update({ deleted_at: new Date().toISOString() })
+    .eq("id", id)
+  if (error) throw new Error(error.message)
+}
+
+export async function updateLoan(
+  id: string,
+  input: UpdateLoanInput
+): Promise<void> {
+  const supabase = createClient()
+  const { error } = await supabase
+    .from("loans")
+    .update({
+      name: input.name,
+      direction: input.direction,
+      default_account_id: input.defaultAccountId ?? null,
+    })
     .eq("id", id)
   if (error) throw new Error(error.message)
 }

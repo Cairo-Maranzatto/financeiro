@@ -43,6 +43,21 @@ _(Atualizado em: 2026-08-21)_
 
 _(Mais recente no topo. Uma entrada por sessão/marco relevante.)_
 
+### 2026-08-28 — Empréstimos com Direção e Edição
+
+1. **Empréstimos Divididos em Tomado/Concedido:**
+   - Coluna `direction` (`tomado`/`concedido`) adicionada à tabela `loans` via migration `20260828120000_loan_direction.sql`.
+   - `pagar_parcela_emprestimo` alterado para gerar `despesa` (negativo) quando `tomado` e `receita` (positivo) quando `concedido`.
+   - Backfill de empréstimos existentes para `tomado` via `DEFAULT 'tomado'` na migration e script `scripts/backfill_loan_direction.sql`.
+2. **Edição de Empréstimos:**
+   - Criada página `/emprestimos/[id]/editar` e componente `LoanEditForm`.
+   - Permite editar nome, direção e conta padrão dos empréstimos existentes.
+   - `useUpdateLoan` e `updateLoan` adicionados à camada de API/hooks.
+3. **UI/UX:**
+   - Lista separada em duas seções: "Peguei (dívidas)" e "Emprestei (créditos)".
+   - Detalhe mostra a direção e ações "Pagar"/`Receber` conforme o tipo.
+   - Links "Editar" adicionados na listagem e no detalhe.
+
 ### 2026-08-21 — Execução: Unificação do Dashboard com Relatórios e Exportação para Impressão
 
 1. **Dashboard Unificado:**

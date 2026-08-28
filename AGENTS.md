@@ -63,6 +63,7 @@ pnpm install
 - **Saldo Inicial:** É uma transação de sistema (categoria "Saldo Inicial"), não um campo na tabela de contas.
 - **Categorias:** Apenas subcategorias (folhas da árvore) podem receber lançamentos. Orçamentos (`budgets`) são definidos apenas no nível de categorias-pai.
 - **Transferências:** Devem ser tratadas de forma atômica (criação de entrada e saída juntas).
+- **Empréstimos:** A tabela `loans` usa a coluna `direction` (`tomado`/`concedido`) para distinguir dívida de crédito. A quitação de parcelas gera `despesa` para `tomado` e `receita` para `concedido`.
 
 ## 8. Riscos e Armadilhas Conhecidas
 

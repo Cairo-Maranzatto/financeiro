@@ -6,6 +6,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 - **Relatórios Avançados:** Filtros dinâmicos por período, contas, categorias e busca por descrição.
 - **Exportação para Impressão:** Geração de relatórios financeiros (DRE) formatados para A4/PDF.
 - **Gestão de Contas:** Controle de saldos e transações em múltiplas moedas (BRL, USD, BTC).
+- **Empréstimos com Direção:** Distinguem empréstimos tomados (dívida) e concedidos (crédito), com edição e quitação gerando `despesa` ou `receita` automaticamente.
 - **Categorias Hierárquicas:** Taxonomia completa com 16 categorias-pai e dezenas de subcategorias.
 - **Inteligência Artificial (LLM):** Assistente integrado para consultas e comandos via chat.
 - **WhatsApp:** Integração para lançamento de despesas e consultas via mensagens.

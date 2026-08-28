@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -22,11 +23,18 @@ import { payInstallmentSchema } from "@/features/loans/domain/schemas"
 type FormValues = z.input<typeof payInstallmentSchema>
 type FormOutput = z.output<typeof payInstallmentSchema>
 
+const DIRECTION_LABEL: Record<string, string> = {
+  tomado: "Peguei",
+  concedido: "Emprestei",
+}
+
 function PayForm({
   installmentId,
+  direction,
   onSuccess,
 }: {
   installmentId: string
+  direction: string
   onSuccess: () => void
 }) {
   const { data: accounts } = useAccounts()
@@ -41,6 +49,11 @@ function PayForm({
     resolver: zodResolver(payInstallmentSchema),
     defaultValues: { installmentId },
   })
+
+  const isConcedido = direction === "concedido"
+  const accountPlaceholder = isConcedido
+    ? "Conta para receber"
+    : "Conta para pagar"
 
   function onSubmit(values: FormOutput) {
     pay(
@@ -66,7 +79,7 @@ function PayForm({
           render={({ field }) => (
             <Select value={field.value ?? ""} onValueChange={field.onChange}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Selecione uma conta">
+                <SelectValue placeholder={accountPlaceholder}>
                   {accounts?.find((a) => a.id === field.value)?.name}
                 </SelectValue>
               </SelectTrigger>
@@ -91,7 +104,13 @@ function PayForm({
         disabled={isPending}
         className="bg-primary text-primary-foreground rounded-md px-3 py-2 text-xs font-medium disabled:opacity-50"
       >
-        {isPending ? "Pagando…" : "Pagar"}
+        {isPending
+          ? isConcedido
+            ? "Recebendo…"
+            : "Pagando…"
+          : isConcedido
+            ? "Receber"
+            : "Pagar"}
       </button>
     </form>
   )
@@ -111,6 +130,7 @@ export function LoanDetail({ id }: { id: string }) {
   )
   const paid = sorted.filter((i) => i.status === "Pago").length
   const today = new Date().toISOString().slice(0, 10)
+  const isConcedido = loan.direction === "concedido"
 
   return (
     <div className="flex flex-col gap-4">
@@ -122,7 +142,7 @@ export function LoanDetail({ id }: { id: string }) {
           ],
           ["Taxa", `${loan.interest_rate}% a.m.`],
           ["Parcelas", `${paid}/${loan.installments_count} pagas`],
-          ["Status", loan.status],
+          ["Direção", DIRECTION_LABEL[loan.direction] ?? loan.direction],
         ].map(([label, value]) => (
           <div key={label} className="rounded-lg border p-3">
             <p className="text-muted-foreground text-xs">{label}</p>
@@ -130,6 +150,13 @@ export function LoanDetail({ id }: { id: string }) {
           </div>
         ))}
       </div>
+
+      <Link
+        href={`/emprestimos/${loan.id}/editar`}
+        className="text-primary text-sm hover:underline"
+      >
+        Editar empréstimo
+      </Link>
 
       <div className="overflow-x-auto rounded-lg border">
         <table className="w-full text-sm">
@@ -176,6 +203,7 @@ export function LoanDetail({ id }: { id: string }) {
                       (payingId === inst.id ? (
                         <PayForm
                           installmentId={inst.id}
+                          direction={loan.direction}
                           onSuccess={() => setPayingId(null)}
                         />
                       ) : (
@@ -183,7 +211,7 @@ export function LoanDetail({ id }: { id: string }) {
                           onClick={() => setPayingId(inst.id)}
                           className="text-primary text-xs hover:underline"
                         >
-                          Pagar
+                          {isConcedido ? "Receber" : "Pagar"}
                         </button>
                       ))}
                   </td>

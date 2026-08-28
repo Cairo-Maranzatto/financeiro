@@ -7,10 +7,14 @@ import {
   fetchLoanDetail,
   createLoan,
   deleteLoan,
+  updateLoan,
   payInstallment,
 } from "@/features/loans/api/loans"
 import type { LoanInstallment } from "@/features/loans/domain/loan-calculator"
-import type { CreateLoanInput } from "@/features/loans/domain/schemas"
+import type {
+  CreateLoanInput,
+  UpdateLoanInput,
+} from "@/features/loans/domain/schemas"
 
 export function useLoans() {
   return useQuery({ queryKey: ["loans"], queryFn: fetchLoans })
@@ -47,6 +51,19 @@ export function useDeleteLoan() {
     mutationFn: deleteLoan,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["loans"] })
+      qc.invalidateQueries({ queryKey: ["dashboard-summary"] })
+    },
+  })
+}
+
+export function useUpdateLoan() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: UpdateLoanInput }) =>
+      updateLoan(id, input),
+    onSuccess: (_, { id }) => {
+      qc.invalidateQueries({ queryKey: ["loans"] })
+      qc.invalidateQueries({ queryKey: ["loans", id] })
       qc.invalidateQueries({ queryKey: ["dashboard-summary"] })
     },
   })

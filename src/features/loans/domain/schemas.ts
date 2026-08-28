@@ -20,6 +20,7 @@ export const createLoanSchema = z.object({
     .optional()
     .or(z.literal("").transform(() => undefined)),
   firstDueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida."),
+  direction: z.enum(["tomado", "concedido"]),
 })
 
 export const payInstallmentSchema = z.object({
@@ -27,5 +28,12 @@ export const payInstallmentSchema = z.object({
   accountId: z.string().uuid("Selecione uma conta."),
 })
 
+export const updateLoanSchema = createLoanSchema.pick({
+  name: true,
+  direction: true,
+  defaultAccountId: true,
+})
+
 export type CreateLoanInput = z.output<typeof createLoanSchema>
+export type UpdateLoanInput = z.output<typeof updateLoanSchema>
 export type PayInstallmentInput = z.output<typeof payInstallmentSchema>

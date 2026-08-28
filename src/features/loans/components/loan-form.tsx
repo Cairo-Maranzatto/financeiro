@@ -49,6 +49,7 @@ export function LoanForm({ onSuccess }: { onSuccess?: (id: string) => void }) {
       interestRate: 0,
       currency: "BRL",
       firstDueDate: todayStr,
+      direction: "tomado",
     },
   })
 
@@ -95,6 +96,28 @@ export function LoanForm({ onSuccess }: { onSuccess?: (id: string) => void }) {
         />
         {errors.name && (
           <p className="text-destructive text-xs">{errors.name.message}</p>
+        )}
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label className="text-sm font-medium">Direção</label>
+        <Controller
+          control={control}
+          name="direction"
+          render={({ field }) => (
+            <Select value={field.value} onValueChange={field.onChange}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="tomado">Peguei (dívida)</SelectItem>
+                <SelectItem value="concedido">Emprestei (crédito)</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
+        />
+        {errors.direction && (
+          <p className="text-destructive text-xs">{errors.direction.message}</p>
         )}
       </div>
 
