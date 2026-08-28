@@ -58,7 +58,7 @@ export const payInstallmentSchema = z.object({
   accountId: z.string().uuid("Selecione uma conta."),
 })
 
-export const updateLoanSchema = createLoanSchema.pick({
+export const updateLoanSchema = baseCreateLoanSchema.pick({
   name: true,
   direction: true,
   defaultAccountId: true,
