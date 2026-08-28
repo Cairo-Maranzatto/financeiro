@@ -47,10 +47,12 @@ type InitialTransaction = {
 export function TransactionForm({
   defaultAccountId,
   initial,
+  onSuccess,
 }: {
   defaultAccountId?: string
   /** Presente = modo edição de um lançamento existente (despesa/receita). */
   initial?: InitialTransaction
+  onSuccess?: () => void
 }) {
   const router = useRouter()
   const [serverError, setServerError] = useState<string | null>(null)
@@ -104,10 +106,14 @@ export function TransactionForm({
       } else {
         await createTransaction.mutateAsync({ ...values, currency })
       }
-      router.replace(
-        `/contas/${values.accountId ?? defaultAccountId ?? initial?.accountId}`
-      )
-      router.refresh()
+      if (onSuccess) {
+        onSuccess()
+      } else {
+        router.replace(
+          `/contas/${values.accountId ?? defaultAccountId ?? initial?.accountId}`
+        )
+        router.refresh()
+      }
     } catch (error) {
       setServerError(
         error instanceof Error

@@ -30,7 +30,13 @@ import type { TransferDetails } from "@/features/transactions/api/transfer"
 
 type FormInput = z.input<typeof transferSchema>
 
-export function TransferForm({ initial }: { initial?: TransferDetails }) {
+export function TransferForm({
+  initial,
+  onSuccess,
+}: {
+  initial?: TransferDetails
+  onSuccess?: () => void
+}) {
   const router = useRouter()
   const [serverError, setServerError] = useState<string | null>(null)
   const { data: accounts } = useAccounts()
@@ -66,8 +72,12 @@ export function TransferForm({ initial }: { initial?: TransferDetails }) {
       } else {
         await transfer.mutateAsync(values)
       }
-      router.replace("/")
-      router.refresh()
+      if (onSuccess) {
+        onSuccess()
+      } else {
+        router.replace("/")
+        router.refresh()
+      }
     } catch (error) {
       setServerError(
         error instanceof Error
