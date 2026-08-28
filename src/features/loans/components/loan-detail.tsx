@@ -31,10 +31,12 @@ const DIRECTION_LABEL: Record<string, string> = {
 function PayForm({
   installmentId,
   direction,
+  defaultAccountId,
   onSuccess,
 }: {
   installmentId: string
   direction: string
+  defaultAccountId?: string | null
   onSuccess: () => void
 }) {
   const { data: accounts } = useAccounts()
@@ -47,7 +49,7 @@ function PayForm({
     reset,
   } = useForm<FormValues, unknown, FormOutput>({
     resolver: zodResolver(payInstallmentSchema),
-    defaultValues: { installmentId },
+    defaultValues: { installmentId, accountId: defaultAccountId ?? "" },
   })
 
   const isConcedido = direction === "concedido"
@@ -204,6 +206,7 @@ export function LoanDetail({ id }: { id: string }) {
                         <PayForm
                           installmentId={inst.id}
                           direction={loan.direction}
+                          defaultAccountId={loan.default_account_id}
                           onSuccess={() => setPayingId(null)}
                         />
                       ) : (

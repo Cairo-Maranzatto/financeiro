@@ -43,7 +43,7 @@ _(Atualizado em: 2026-08-21)_
 
 _(Mais recente no topo. Uma entrada por sessão/marco relevante.)_
 
-### 2026-08-28 — Empréstimos com Direção e Edição
+### 2026-08-28 — Empréstimos com Direção, Edição e Fluxo de Caixa
 
 1. **Empréstimos Divididos em Tomado/Concedido:**
    - Coluna `direction` (`tomado`/`concedido`) adicionada à tabela `loans` via migration `20260828120000_loan_direction.sql`.
@@ -53,7 +53,13 @@ _(Mais recente no topo. Uma entrada por sessão/marco relevante.)_
    - Criada página `/emprestimos/[id]/editar` e componente `LoanEditForm`.
    - Permite editar nome, direção e conta padrão dos empréstimos existentes.
    - `useUpdateLoan` e `updateLoan` adicionados à camada de API/hooks.
-3. **UI/UX:**
+3. **Fluxo de Caixa de Empréstimos:**
+   - Colunas `source_account_id` e `destination_account_id` adicionadas à tabela `loans`.
+   - Criação de empréstimo gera transação inicial: `receita` (+) na conta destino para `tomado`; `despesa` (-) na conta origem para `concedido`.
+   - Quitação de parcelas gera transações categorizadas: `Pagamento de Empréstimo` para `tomado`; `Recebimento de Empréstimo Concedido` para `concedido`.
+   - Categorias criadas para todos os usuários via migration `20260828130000_loan_cashflow.sql`.
+   - Formulário de criação expõe a conta destino (tomado) e a conta origem (concedido).
+4. **UI/UX:**
    - Lista separada em duas seções: "Peguei (dívidas)" e "Emprestei (créditos)".
    - Detalhe mostra a direção e ações "Pagar"/`Receber` conforme o tipo.
    - Links "Editar" adicionados na listagem e no detalhe.

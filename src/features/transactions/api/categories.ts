@@ -35,6 +35,7 @@ export async function createCategory(
       type: input.type,
       parent_category_id: input.parentCategoryId ?? null,
       icon: input.parentCategoryId ? null : (input.icon ?? null),
+      is_essential: input.isEssential,
     })
     .select("id")
     .single()
@@ -53,6 +54,7 @@ export async function updateCategory(
       name: input.name,
       type: input.type,
       icon: input.parentCategoryId ? null : (input.icon ?? null),
+      is_essential: input.isEssential,
     })
     .eq("id", input.id)
 

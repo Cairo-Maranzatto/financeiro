@@ -28,7 +28,13 @@ const TYPE_LABELS: Record<CategoryType, string> = {
 interface Props {
   initial?: Pick<
     Category,
-    "id" | "name" | "type" | "icon" | "parent_category_id" | "is_internal"
+    | "id"
+    | "name"
+    | "type"
+    | "icon"
+    | "parent_category_id"
+    | "is_internal"
+    | "is_essential"
   >
   /** Categorias-pai disponíveis (parent_category_id null e type !== "Ambas") */
   parentOptions: Pick<Category, "id" | "name" | "type" | "icon">[]
@@ -58,6 +64,7 @@ export function CategoryForm({
       type: (initial?.type as CategoryType) ?? "Despesa",
       parentCategoryId: initial?.parent_category_id ?? undefined,
       icon: initial?.icon ?? undefined,
+      isEssential: initial?.is_essential ?? false,
     },
   })
 
@@ -68,6 +75,7 @@ export function CategoryForm({
         type: initial.type as CategoryType,
         parentCategoryId: initial.parent_category_id ?? undefined,
         icon: initial.icon ?? undefined,
+        isEssential: initial.is_essential ?? false,
       })
     }
   }, [initial, reset])
@@ -194,6 +202,21 @@ export function CategoryForm({
           </div>
         </div>
       )}
+
+      <div className="flex items-center gap-2 pt-1">
+        <input
+          id="isEssential"
+          type="checkbox"
+          {...register("isEssential")}
+          className="size-4"
+        />
+        <label htmlFor="isEssential" className="text-sm font-medium">
+          Categoria essencial
+        </label>
+      </div>
+      <p className="text-muted-foreground -mt-2 text-xs">
+        Categorias essenciais não podem ser excluídas.
+      </p>
 
       <div className="flex gap-2 pt-1">
         <button

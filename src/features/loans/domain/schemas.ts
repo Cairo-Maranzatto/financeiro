@@ -2,7 +2,7 @@ import { z } from "zod"
 
 import { currencySchema } from "@/features/accounts/domain/schemas"
 
-export const createLoanSchema = z.object({
+const baseCreateLoanSchema = z.object({
   name: z.string().min(2, "Nome mínimo 2 caracteres."),
   principalAmount: z.coerce
     .number()
@@ -19,9 +19,39 @@ export const createLoanSchema = z.object({
     .uuid("Selecione uma conta.")
     .optional()
     .or(z.literal("").transform(() => undefined)),
+  sourceAccountId: z
+    .string()
+    .uuid("Selecione uma conta.")
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
+  destinationAccountId: z
+    .string()
+    .uuid("Selecione uma conta.")
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
   firstDueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida."),
   direction: z.enum(["tomado", "concedido"]),
 })
+
+export const createLoanSchema = baseCreateLoanSchema
+  .refine(
+    (data) =>
+      data.direction !== "tomado" ||
+      (data.destinationAccountId && data.destinationAccountId !== ""),
+    {
+      message: "Selecione a conta de destino do crédito.",
+      path: ["destinationAccountId"],
+    }
+  )
+  .refine(
+    (data) =>
+      data.direction !== "concedido" ||
+      (data.sourceAccountId && data.sourceAccountId !== ""),
+    {
+      message: "Selecione a conta de origem do valor.",
+      path: ["sourceAccountId"],
+    }
+  )
 
 export const payInstallmentSchema = z.object({
   installmentId: z.string().uuid(),

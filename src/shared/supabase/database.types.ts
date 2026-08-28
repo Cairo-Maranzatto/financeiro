@@ -142,6 +142,7 @@ export type Database = {
           deleted_by: string | null
           icon: string | null
           id: string
+          is_essential: boolean
           name: string
           parent_category_id: string | null
           system_category_id: string | null
@@ -157,6 +158,7 @@ export type Database = {
           deleted_by?: string | null
           icon?: string | null
           id?: string
+          is_essential?: boolean
           name: string
           parent_category_id?: string | null
           system_category_id?: string | null
@@ -172,6 +174,7 @@ export type Database = {
           deleted_by?: string | null
           icon?: string | null
           id?: string
+          is_essential?: boolean
           name?: string
           parent_category_id?: string | null
           system_category_id?: string | null
@@ -452,12 +455,14 @@ export type Database = {
           default_account_id: string | null
           deleted_at: string | null
           deleted_by: string | null
+          destination_account_id: string | null
           direction: string
           id: string
           installments_count: number
           interest_rate: number
           name: string
           principal_amount: number
+          source_account_id: string | null
           status: string
           updated_at: string
           updated_by: string | null
@@ -470,12 +475,14 @@ export type Database = {
           default_account_id?: string | null
           deleted_at?: string | null
           deleted_by?: string | null
+          destination_account_id?: string | null
           direction: string
           id?: string
           installments_count: number
           interest_rate: number
           name: string
           principal_amount: number
+          source_account_id?: string | null
           status: string
           updated_at?: string
           updated_by?: string | null
@@ -488,12 +495,14 @@ export type Database = {
           default_account_id?: string | null
           deleted_at?: string | null
           deleted_by?: string | null
+          destination_account_id?: string | null
           direction?: string
           id?: string
           installments_count?: number
           interest_rate?: number
           name?: string
           principal_amount?: number
+          source_account_id?: string | null
           status?: string
           updated_at?: string
           updated_by?: string | null
@@ -503,6 +512,20 @@ export type Database = {
           {
             foreignKeyName: "loans_default_account_id_fkey"
             columns: ["default_account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loans_destination_account_id_fkey"
+            columns: ["destination_account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loans_source_account_id_fkey"
+            columns: ["source_account_id"]
             isOneToOne: false
             referencedRelation: "accounts"
             referencedColumns: ["id"]
@@ -600,6 +623,7 @@ export type Database = {
           icon: string | null
           id: string
           is_active: boolean
+          is_essential: boolean
           is_internal: boolean
           name: string
           parent_id: string | null
@@ -611,6 +635,7 @@ export type Database = {
           icon?: string | null
           id?: string
           is_active?: boolean
+          is_essential?: boolean
           is_internal?: boolean
           name: string
           parent_id?: string | null
@@ -622,6 +647,7 @@ export type Database = {
           icon?: string | null
           id?: string
           is_active?: boolean
+          is_essential?: boolean
           is_internal?: boolean
           name?: string
           parent_id?: string | null
@@ -850,12 +876,14 @@ export type Database = {
         Args: {
           p_currency: string
           p_default_account_id: string
+          p_destination_account_id: string
           p_direction: string
           p_installments: Json
           p_installments_count: number
           p_interest_rate: number
           p_name: string
           p_principal_amount: number
+          p_source_account_id: string
         }
         Returns: string
       }

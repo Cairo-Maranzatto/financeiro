@@ -15,6 +15,8 @@ export type LoanRow = {
   status: string
   direction: string
   default_account_id: string | null
+  source_account_id: string | null
+  destination_account_id: string | null
   created_at: string
   accounts: { name: string } | null
 }
@@ -37,7 +39,7 @@ export async function fetchLoans(): Promise<LoanRow[]> {
   const supabase = createClient()
   const { data, error } = await supabase
     .from("loans")
-    .select("*, accounts(name)")
+    .select("*, accounts!default_account_id(name)")
     .is("deleted_at", null)
     .order("created_at", { ascending: false })
 
@@ -49,7 +51,7 @@ export async function fetchLoanDetail(id: string): Promise<LoanDetail> {
   const supabase = createClient()
   const { data, error } = await supabase
     .from("loans")
-    .select("*, accounts(name), loan_installments(*)")
+    .select("*, accounts!default_account_id(name), loan_installments(*)")
     .is("deleted_at", null)
     .eq("id", id)
     .single()

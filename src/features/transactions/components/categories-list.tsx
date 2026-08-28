@@ -39,7 +39,12 @@ function CategoryRow({
 
   function handleUpdate(values: CreateCategoryInput) {
     update(
-      { id: category.id, name: values.name, type: values.type },
+      {
+        id: category.id,
+        name: values.name,
+        type: values.type,
+        isEssential: values.isEssential,
+      },
       { onSuccess: () => setEditing(false) }
     )
   }
@@ -83,7 +88,13 @@ function CategoryRow({
             sistema
           </span>
         )}
+        {!category.is_internal && category.is_essential && (
+          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+            essencial
+          </span>
+        )}
         {!category.is_internal &&
+          !category.is_essential &&
           category.type === "Ambas" &&
           !category.parent_category_id && (
             <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
@@ -119,9 +130,13 @@ function CategoryRow({
           >
             Editar
           </button>
-          {hasChildren ? (
+          {hasChildren || category.is_essential ? (
             <span
-              title="Exclua ou mova as subcategorias primeiro"
+              title={
+                category.is_essential
+                  ? "Categorias essenciais não podem ser excluídas"
+                  : "Exclua ou mova as subcategorias primeiro"
+              }
               className="text-muted-foreground cursor-not-allowed rounded-md px-3 py-1 text-xs font-medium"
             >
               Excluir

@@ -54,6 +54,7 @@ export function LoanForm({ onSuccess }: { onSuccess?: (id: string) => void }) {
   })
 
   const currency = watch("currency")
+  const direction = watch("direction")
 
   function handlePreview() {
     const values = watch()
@@ -216,7 +217,9 @@ export function LoanForm({ onSuccess }: { onSuccess?: (id: string) => void }) {
         </div>
 
         <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium">Conta padrão (opcional)</label>
+          <label className="text-sm font-medium">
+            Conta padrão de pagamento/recebimento (opcional)
+          </label>
           <Controller
             control={control}
             name="defaultAccountId"
@@ -239,6 +242,72 @@ export function LoanForm({ onSuccess }: { onSuccess?: (id: string) => void }) {
           />
         </div>
       </div>
+
+      {direction === "tomado" && (
+        <div className="flex flex-col gap-1">
+          <label className="text-sm font-medium">
+            Conta de destino do crédito
+          </label>
+          <Controller
+            control={control}
+            name="destinationAccountId"
+            render={({ field }) => (
+              <Select value={field.value ?? ""} onValueChange={field.onChange}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Selecione a conta">
+                    {accounts?.find((a) => a.id === field.value)?.name}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {accounts?.map((acc) => (
+                    <SelectItem key={acc.id} value={acc.id}>
+                      {acc.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
+          {errors.destinationAccountId && (
+            <p className="text-destructive text-xs">
+              {errors.destinationAccountId.message}
+            </p>
+          )}
+        </div>
+      )}
+
+      {direction === "concedido" && (
+        <div className="flex flex-col gap-1">
+          <label className="text-sm font-medium">
+            Conta de origem do valor
+          </label>
+          <Controller
+            control={control}
+            name="sourceAccountId"
+            render={({ field }) => (
+              <Select value={field.value ?? ""} onValueChange={field.onChange}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Selecione a conta">
+                    {accounts?.find((a) => a.id === field.value)?.name}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {accounts?.map((acc) => (
+                    <SelectItem key={acc.id} value={acc.id}>
+                      {acc.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
+          {errors.sourceAccountId && (
+            <p className="text-destructive text-xs">
+              {errors.sourceAccountId.message}
+            </p>
+          )}
+        </div>
+      )}
 
       <button
         type="button"

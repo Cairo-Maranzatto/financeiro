@@ -35,6 +35,8 @@ export async function POST(request: NextRequest) {
     p_installments_count: input.installmentsCount,
     p_currency: input.currency,
     p_default_account_id: (input.defaultAccountId ?? null) as string,
+    p_source_account_id: (input.sourceAccountId ?? null) as string,
+    p_destination_account_id: (input.destinationAccountId ?? null) as string,
     p_direction: input.direction,
     p_installments: installments,
   })

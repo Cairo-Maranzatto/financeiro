@@ -13,6 +13,7 @@ export const createCategorySchema = z.object({
   type: categoryTypeSchema,
   parentCategoryId: z.uuid().optional(),
   icon: z.string().optional(),
+  isEssential: z.boolean(),
 })
 export type CreateCategoryInput = z.infer<typeof createCategorySchema>
 
@@ -22,6 +23,7 @@ export const updateCategorySchema = z.object({
   type: categoryTypeSchema,
   parentCategoryId: z.uuid().optional(),
   icon: z.string().optional(),
+  isEssential: z.boolean(),
 })
 export type UpdateCategoryInput = z.infer<typeof updateCategorySchema>
 
